@@ -152,7 +152,7 @@ def build_glance():
         ls = day_lessons(d)
         items = "".join(
             f'<div class="gl__i{" gl__i--nine" if p == 9 else ""}">'
-            f'<b>{k}</b><span>{PERIOD_TIME[p].split("—")[0]}</span></div>'
+            f'<b>{k}<em>班</em></b><span>{PERIOD_TIME[p].split("—")[0]}</span></div>'
             for (_, p, k) in ls)
         out.append(f'''
       <div class="gl">
@@ -190,8 +190,8 @@ def build_grid():
             if k:
                 chip = "pill" + (" pill--nine" if p == 9 else "")
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
-                             f'<span class="pill__k">{k}</span>'
-                             f'<span class="pill__u">班 · 政治</span></div></div>')
+                             f'<span class="pill__k">{k}<em>班</em></span>'
+                             f'<span class="pill__u">政治</span></div></div>')
             elif note:
                 cells.append(f'<div class="c c--note{last}"><span>{note}</span></div>')
             else:
@@ -240,6 +240,8 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 .gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 8px}
 .gl__i{background:var(--soft);border-radius:14px;padding:6px 4px;margin-top:7px}
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
+.gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
+            font-family:'Noto Sans SC',sans-serif}
 .gl__i span{display:block;font-size:14.5px;color:var(--muted);font-weight:700;margin-top:1px}
 .gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
 
@@ -281,7 +283,9 @@ h2{font-size:30px}
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
 .pill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
-.pill__u{font-size:12.5px;font-weight:700;opacity:.95;letter-spacing:.5px}
+.pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
+            font-family:'Noto Sans SC',sans-serif}
+.pill__u{font-size:13px;font-weight:700;opacity:.95;letter-spacing:1.5px;margin-top:1px}
 .c--note{background:var(--bg)}
 .c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
               border-radius:12px;padding:5px 10px}

@@ -44,6 +44,8 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 .gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 8px}
 .gl__i{background:var(--soft);border-radius:14px;padding:6px 4px;margin-top:7px}
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
+.gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
+            font-family:'Noto Sans SC',sans-serif}
 .gl__i span{display:block;font-size:14.5px;color:var(--muted);font-weight:700;margin-top:1px}
 .gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
 
@@ -85,7 +87,9 @@ h2{font-size:30px}
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
 .pill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
-.pill__u{font-size:12.5px;font-weight:700;opacity:.95;letter-spacing:.5px}
+.pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
+            font-family:'Noto Sans SC',sans-serif}
+.pill__u{font-size:13px;font-weight:700;opacity:.95;letter-spacing:1.5px;margin-top:1px}
 .c--note{background:var(--bg)}
 .c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
               border-radius:12px;padding:5px 10px}
@@ -135,31 +139,31 @@ h2{font-size:30px}
       <div class="gl">
         <div class="gl__d">周一</div>
         <div class="gl__n">1 节</div>
-        <div class="gl__i"><b>125</b><span>11:20</span></div>
+        <div class="gl__i"><b>125<em>班</em></b><span>11:20</span></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周二</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>129</b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>128</b><span>16:05</span></div>
+        <div class="gl__i"><b>129<em>班</em></b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>128<em>班</em></b><span>16:05</span></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周三</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>125</b><span>7:40</span></div><div class="gl__i"><b>129</b><span>11:20</span></div>
+        <div class="gl__i"><b>125<em>班</em></b><span>7:40</span></div><div class="gl__i"><b>129<em>班</em></b><span>11:20</span></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周四</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>128</b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>129</b><span>16:05</span></div>
+        <div class="gl__i"><b>128<em>班</em></b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>129<em>班</em></b><span>16:05</span></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周五</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>125</b><span>8:30</span></div><div class="gl__i"><b>128</b><span>9:35</span></div>
+        <div class="gl__i"><b>125<em>班</em></b><span>8:30</span></div><div class="gl__i"><b>128<em>班</em></b><span>9:35</span></div>
       </div></div>
 
   <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
@@ -182,7 +186,7 @@ h2{font-size:30px}
       <div class="tc tc--mine"><b>第1节</b><i>7:40—8:20</i></div>
       <div class="c"><span class="c__dot"></span></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill"><span class="pill__k">125</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill"><span class="pill__k">125<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c"><span class="c__dot"></span></div>
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--mine"><b>第2节</b><i>8:30—9:10</i></div>
@@ -190,7 +194,7 @@ h2{font-size:30px}
       <div class="c"><span class="c__dot"></span></div>
       <div class="c"><span class="c__dot"></span></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on c--last"><div class="pill"><span class="pill__k">125</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on c--last"><div class="pill"><span class="pill__k">125<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="tc tc--soft"><i>9:10—9:35</i></div>
       <div class="bd bd--rest"><span class="bd__n">🏃 课间操</span></div>
       <div class="tc tc--mine"><b>第3节</b><i>9:35—10:15</i></div>
@@ -198,7 +202,7 @@ h2{font-size:30px}
       <div class="c"><span class="c__dot"></span></div>
       <div class="c"><span class="c__dot"></span></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on c--last"><div class="pill"><span class="pill__k">128</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on c--last"><div class="pill"><span class="pill__k">128<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="tc tc--soft"><i>10:25—10:30</i></div>
       <div class="bd bd--rest"><span class="bd__n">👀 眼保健操</span></div>
       <div class="tc"><b>第4节</b><i>10:30—11:10</i></div>
@@ -208,9 +212,9 @@ h2{font-size:30px}
       <div class="c"><span class="c__dot"></span></div>
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--mine"><b>第5节</b><i>11:20—12:00</i></div>
-      <div class="c c--on"><div class="pill"><span class="pill__k">125</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill"><span class="pill__k">125<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill"><span class="pill__k">129</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill"><span class="pill__k">129<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c"><span class="c__dot"></span></div>
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--soft"><i>12:00—12:35</i></div>
@@ -233,15 +237,15 @@ h2{font-size:30px}
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--mine"><b>第8节</b><i>15:15—15:55</i></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill"><span class="pill__k">129</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill"><span class="pill__k">129<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill"><span class="pill__k">128</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill"><span class="pill__k">128<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--mine tc--warn"><b>第9节</b><span class="tag tag--warn">待确认</span><i>16:05—17:05</i><em>作息表上叫「课外活动」，60分钟</em></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill pill--nine"><span class="pill__k">128</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill pill--nine"><span class="pill__k">128<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c"><span class="c__dot"></span></div>
-      <div class="c c--on"><div class="pill pill--nine"><span class="pill__k">129</span><span class="pill__u">班 · 政治</span></div></div>
+      <div class="c c--on"><div class="pill pill--nine"><span class="pill__k">129<em>班</em></span><span class="pill__u">政治</span></div></div>
       <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--soft"><i>17:05</i></div>
       <div class="bd bd--meal"><span class="bd__n">🍜 晚餐</span></div>
