@@ -7,6 +7,10 @@ import os, json, base64
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 
+TITLE = "玥y的政治课表"
+SUBTITLE = "2026 学年第一学期 · 民族团结班 · 任教 125 / 128 / 129 班"
+SIGN = "凯凯"
+
 # ---------------- 数据 ----------------
 # 作息表（萧山三中作息时间表）。kind: rest / class / meal / night
 # p = 节次编号（与课表行号对应）
@@ -72,7 +76,6 @@ def kitty_svg(c):
   <g fill="{c['brand']}">
     <circle cx="103" cy="26" r="10"/>
     <path d="M103 26 L88 14 L88 38 Z"/><path d="M103 26 L118 14 L118 38 Z"/>
-    <circle cx="103" cy="26" r="4" fill="#fff" opacity=".85"/>
   </g>
   <ellipse cx="44" cy="62" rx="4.6" ry="6" fill="{c['ink']}"/>
   <ellipse cx="76" cy="62" rx="4.6" ry="6" fill="{c['ink']}"/>
@@ -104,24 +107,24 @@ def bunny_svg(c):
 THEMES = {
     "kitty": dict(
         file="政治课表_Kitty版.png",
-        brand="#E8455F", accent="#FFC93C", ink="#3A2B33",
-        bg="#FFF3F6", card="#FFFFFF", soft="#FFE8EF", line="#F6D3DE",
-        muted="#9A8791", warn="#F27E2C", warnbg="#FFF1E3",
-        mascot=kitty_svg, deco="🎀 💗 🍓",
+        brand="#E8455F", brand2="#FF7C9B", accent="#FFC93C", ink="#3A2B33",
+        bg="#FFF3F6", card="#FFFFFF", soft="#FFE8EF", line="#F6D3DE", dot="#FADCE5",
+        muted="#9A8791", warn="#F0862F", warn2="#FFA85C", warnbg="#FFF1E3",
+        mascot=kitty_svg, deco="🎀 💗 🍓", hearts="🎀",
     ),
     "puppy": dict(
         file="政治课表_帕恰狗版.png",
-        brand="#2E86DE", accent="#FFD23F", ink="#25384D",
-        bg="#EFF7FF", card="#FFFFFF", soft="#E1F0FF", line="#CCE4F8",
-        muted="#7E93A8", warn="#EF7C3C", warnbg="#FFF0E6",
-        mascot=puppy_svg, deco="☁️ 🐾 ⭐",
+        brand="#2E86DE", brand2="#63AEEF", accent="#FFD23F", ink="#25384D",
+        bg="#EFF7FF", card="#FFFFFF", soft="#E1F0FF", line="#CCE4F8", dot="#D8EAFB",
+        muted="#7E93A8", warn="#EF7C3C", warn2="#FFA36B", warnbg="#FFF0E6",
+        mascot=puppy_svg, deco="☁️ 🐾 ⭐", hearts="🐾",
     ),
     "bunny": dict(
         file="政治课表_米菲版.png",
-        brand="#E8532C", accent="#F5B700", ink="#25384D",
-        bg="#FFF6EE", card="#FFFFFF", soft="#FFE9DC", line="#F5D9C7",
-        muted="#94806F", warn="#2C6FBB", warnbg="#E8F1FB",
-        mascot=bunny_svg, deco="🥕 🌼 ⭐",
+        brand="#E8532C", brand2="#FF8154", accent="#F5B700", ink="#25384D",
+        bg="#FFF6EE", card="#FFFFFF", soft="#FFE9DC", line="#F5D9C7", dot="#FBE3D2",
+        muted="#94806F", warn="#2C6FBB", warn2="#5D9BDD", warnbg="#E8F1FB",
+        mascot=bunny_svg, deco="🥕 🌼 ⭐", hearts="🌼",
     ),
 }
 
@@ -161,14 +164,14 @@ def build_glance():
 
 def build_grid():
     cells = ['<div class="hd hd--t">时间</div>']
-    cells += [f'<div class="hd">{d}</div>' for d in DAYS]
+    cells += [f'<div class="hd"><span>{d}</span></div>' for d in DAYS]
 
     for s in SCHEDULE:
         p = s.get("p")
         if not p:                                   # 作息条（每天相同）
             sub = f'<span class="bd__s">{s["sub"]}</span>' if s.get("sub") else ""
             tag = f'<span class="tag">{s["tag"]}</span>' if s.get("tag") else ""
-            cells.append(f'<div class="tc tc--soft tc--{s["kind"]}"><i>{s["t"]}</i></div>')
+            cells.append(f'<div class="tc tc--soft"><i>{s["t"]}</i></div>')
             cells.append(f'<div class="bd bd--{s["kind"]}">'
                          f'<span class="bd__n">{s.get("icon","")} {s["name"]}</span>{sub}{tag}</div>')
             continue
@@ -185,95 +188,113 @@ def build_grid():
             note = NOTE_CELL.get((d, p))
             last = " c--last" if d == 5 else ""
             if k:
-                cls = "c c--on" + (" c--nine" if p == 9 else "") + last
-                cells.append(f'<div class="{cls}"><span class="c__k">{k}</span>'
-                             f'<span class="c__u">班 · 政治</span></div>')
+                chip = "pill" + (" pill--nine" if p == 9 else "")
+                cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
+                             f'<span class="pill__k">{k}</span>'
+                             f'<span class="pill__u">班 · 政治</span></div></div>')
             elif note:
-                cells.append(f'<div class="c c--note{last}">{note}</div>')
+                cells.append(f'<div class="c c--note{last}"><span>{note}</span></div>')
             else:
-                cells.append(f'<div class="c{last}"><span class="c__dot">·</span></div>')
+                cells.append(f'<div class="c{last}"><span class="c__dot"></span></div>')
     return "\n      ".join(cells)
 
 CSS = """
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);
+body{color:var(--ink);background-color:var(--bg);
+     background-image:radial-gradient(var(--dot) 2px, transparent 2.1px);
+     background-size:26px 26px;
      font-family:'Noto Sans SC','WenQuanYi Zen Hei',sans-serif;-webkit-font-smoothing:antialiased}
 .page{width:1080px;padding:36px 30px 40px}
-h1,h2,.hd,.gl__d{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weight:400}
-.c__k,.tc i,.gl__i span{font-family:'Fredoka','Noto Sans SC',sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,.hd span,.gl__d,.sign b{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weight:400}
+.pill__k,.tc i,.gl__i span{font-family:'Fredoka','Noto Sans SC',sans-serif;font-variant-numeric:tabular-nums}
 
 /* ---------- 头部 ---------- */
-.hero{position:relative;background:var(--card);border:4px solid var(--ink);border-radius:32px;
-      padding:22px 30px;display:flex;align-items:center;gap:24px;overflow:hidden;
-      box-shadow:0 9px 0 var(--brand)}
-.hero:before{content:"";position:absolute;right:-40px;top:-60px;width:300px;height:300px;
-             border-radius:50%;background:var(--soft)}
+.hero{position:relative;border-radius:34px;padding:24px 30px;display:flex;align-items:center;gap:24px;
+      overflow:hidden;background:var(--card);border:4px solid var(--ink);
+      box-shadow:0 10px 0 var(--brand),0 10px 26px rgba(0,0,0,.10)}
+.hero:before{content:"";position:absolute;right:-70px;top:-90px;width:340px;height:340px;
+             border-radius:50%;background:linear-gradient(150deg,var(--soft),transparent 70%)}
+.hero:after{content:"";position:absolute;left:-50px;bottom:-90px;width:220px;height:220px;
+            border-radius:50%;background:var(--soft);opacity:.6}
 .hero>*{position:relative}
 .mascot{width:150px;height:140px;flex:none}
-.mascot--img{width:172px;height:172px;object-fit:contain;
-             filter:drop-shadow(0 5px 7px rgba(0,0,0,.13))}
-h1{font-size:50px;line-height:1.1}
-h1 small{display:block;font-size:19px;color:var(--muted);margin-top:7px;
+.mascot--img{width:180px;height:180px;object-fit:contain;
+             filter:drop-shadow(0 6px 9px rgba(0,0,0,.15))}
+h1{font-size:52px;line-height:1.12;letter-spacing:1px}
+h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-spacing:0;
          font-family:'Noto Sans SC',sans-serif}
-.stats{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap;max-width:660px}
+.stats{display:flex;gap:9px;margin-top:15px;flex-wrap:wrap;max-width:640px}
 .stat{background:var(--soft);border:2.5px solid var(--ink);border-radius:999px;
       padding:6px 15px;font-size:18px;font-weight:700}
 .stat b{font-family:'Fredoka',sans-serif;color:var(--brand);font-size:21px}
-.deco{position:absolute;right:26px;top:16px;font-size:22px;letter-spacing:4px;opacity:.85}
+.deco{position:absolute;right:26px;top:18px;font-size:21px;letter-spacing:5px;opacity:.8}
+.by{position:absolute;right:26px;bottom:18px;font-size:16px;font-weight:700;color:var(--brand);
+    background:var(--soft);border:2px solid var(--brand);border-radius:999px;padding:3px 13px}
 
 /* ---------- 速览 ---------- */
-.glance{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:22px}
-.gl{background:var(--card);border:3px solid var(--ink);border-radius:20px;padding:12px 10px 14px;
-    text-align:center;box-shadow:0 5px 0 var(--line)}
-.gl__d{font-size:26px;color:var(--brand);line-height:1.2}
-.gl__n{font-size:14px;color:var(--muted);font-weight:700;margin-bottom:9px}
-.gl__i{background:var(--soft);border-radius:12px;padding:5px 4px;margin-top:6px}
-.gl__i b{display:block;font-size:25px;font-family:'Fredoka',sans-serif;line-height:1.1}
-.gl__i span{display:block;font-size:15px;color:var(--muted);font-weight:700}
-.gl__i--nine{background:var(--warnbg);outline:2px dashed var(--warn);outline-offset:-2px}
+.glance{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:22px}
+.gl{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 10px 14px;
+    text-align:center;box-shadow:0 6px 0 var(--line);overflow:hidden}
+.gl__d{font-size:26px;color:#fff;line-height:1.35;margin:0 -10px;
+       background:linear-gradient(135deg,var(--brand),var(--brand2))}
+.gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 8px}
+.gl__i{background:var(--soft);border-radius:14px;padding:6px 4px;margin-top:7px}
+.gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
+.gl__i span{display:block;font-size:14.5px;color:var(--muted);font-weight:700;margin-top:1px}
+.gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
 
 /* ---------- 主表 ---------- */
 .sec__hd{display:flex;align-items:center;gap:12px;margin:26px 0 14px}
 h2{font-size:30px}
 .sec__hd .kicker{font-size:16px;color:var(--muted);font-weight:700}
-.sec__hd .bar{flex:1;height:5px;border-radius:99px;background:var(--line)}
-.grid{display:grid;grid-template-columns:212px repeat(5,1fr);
-      background:var(--card);border:3.5px solid var(--ink);border-radius:26px;overflow:hidden;
-      box-shadow:0 8px 0 var(--line)}
-.hd{background:var(--ink);color:#fff;font-size:26px;text-align:center;padding:13px 0}
-.hd--t{font-size:19px;background:var(--ink);opacity:.92}
-.tc{padding:10px 8px 10px 16px;border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
+.sec__hd .bar{flex:1;height:6px;border-radius:99px;
+              background:linear-gradient(90deg,var(--line),transparent)}
+.grid{display:grid;grid-template-columns:206px repeat(5,1fr);
+      background:var(--card);border:4px solid var(--ink);border-radius:28px;overflow:hidden;
+      box-shadow:0 9px 0 var(--line),0 12px 30px rgba(0,0,0,.07)}
+.hd{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:27px;
+    text-align:center;padding:14px 0 12px}
+.hd--t{font-size:19px;font-weight:700;background:var(--ink);color:#fff;
+       display:flex;align-items:center;justify-content:center;
+       font-family:'Noto Sans SC',sans-serif;letter-spacing:3px}
+.tc{padding:11px 8px 11px 18px;border-bottom:2px solid var(--line);border-right:2px solid var(--line);
+    background:var(--card)}
 .tc b{display:block;font-size:22px;font-weight:800;line-height:1.2}
 .tc i{display:block;font-style:normal;font-size:17px;color:var(--muted);font-weight:600;margin-top:2px}
 .tc em{display:block;font-style:normal;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35}
 .tc--soft{display:flex;align-items:center;background:var(--bg)}
 .tc--soft i{font-size:16px;margin:0}
-.tc--mine{background:var(--soft)}
+.tc--mine{background:var(--soft);box-shadow:inset 7px 0 0 var(--brand)}
 .tc--mine b{color:var(--brand)}
-.tc--warn{background:var(--warnbg)}
+.tc--warn{background:var(--warnbg);box-shadow:inset 7px 0 0 var(--warn)}
 .tc--warn b{color:var(--warn)}
 .tag{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:1px 8px;
-     border:2px solid var(--line);color:var(--muted);margin-left:2px;vertical-align:2px}
+     border:2px solid var(--line);color:var(--muted);margin-left:3px;vertical-align:2px}
 .tag--warn{background:var(--warn);color:#fff;border-color:var(--warn)}
-.c{border-bottom:2px solid var(--line);border-right:2px solid var(--line);
-   min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.c{border-bottom:2px solid var(--line);border-right:2px solid var(--line);min-height:78px;
+   display:flex;align-items:center;justify-content:center;padding:7px 8px;background:var(--card)}
 .c--last{border-right:none}
-.c__dot{color:var(--line);font-size:26px;line-height:1}
-.c--on{background:var(--brand);color:#fff}
-.c__k{font-size:32px;font-weight:800;line-height:1}
-.c__u{font-size:13px;font-weight:700;opacity:.92}
-.c--nine{background:var(--warn)}
-.c--note{font-size:15px;color:var(--muted);font-weight:700;background:var(--bg)}
+.c__dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.pill{width:100%;height:100%;border-radius:17px;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:1px;color:#fff;
+      background:linear-gradient(150deg,var(--brand2),var(--brand));
+      box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
+.pill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
+.pill__u{font-size:12.5px;font-weight:700;opacity:.95;letter-spacing:.5px}
+.c--note{background:var(--bg)}
+.c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
+              border-radius:12px;padding:5px 10px}
 .bd{grid-column:2 / -1;border-bottom:2px solid var(--line);background:var(--bg);
     display:flex;align-items:center;gap:10px;padding:9px 18px;min-height:46px}
 .bd__n{font-size:19px;font-weight:700;color:var(--muted)}
 .bd__s{font-size:15px;color:var(--muted);opacity:.85}
-.bd--night{background:var(--bg);opacity:.82}
-.bd--meal .bd__n{color:var(--ink);opacity:.75}
+.bd--night{opacity:.8}
+.bd--meal .bd__n{color:var(--ink);opacity:.8}
 
 /* ---------- 说明 ---------- */
 .notes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
-.note{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:16px 20px;
+.note{background:var(--card);border:3px solid var(--ink);border-radius:24px;padding:16px 20px;
       box-shadow:0 6px 0 var(--line)}
 .note--warn{background:var(--warnbg);border-color:var(--warn);box-shadow:0 6px 0 var(--warn);
             grid-column:1/-1}
@@ -281,18 +302,26 @@ h2{font-size:30px}
 .note li,.note p{font-size:17px;line-height:1.7;font-weight:500}
 .note ul{margin-left:20px}
 .note b{color:var(--warn)}
-.foot{margin-top:22px;text-align:center;font-size:15px;color:var(--muted);font-weight:600}
+
+/* ---------- 署名 ---------- */
+.sign{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:30px}
+.sign__l{height:3px;width:120px;border-radius:99px;background:var(--line)}
+.sign__p{background:var(--card);border:2.5px solid var(--brand);border-radius:999px;
+         padding:8px 22px;font-size:17px;font-weight:700;color:var(--muted);
+         box-shadow:0 4px 0 var(--soft)}
+.sign b{font-size:22px;color:var(--brand);margin:0 4px}
 """
 
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
-<style>:root{--brand:%(brand)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;--card:%(card)s;
---soft:%(soft)s;--line:%(line)s;--muted:%(muted)s;--warn:%(warn)s;--warnbg:%(warnbg)s;}
+<style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
+--card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;}
 %(css)s</style></head><body><div class="page">
 
   <div class="hero">
     %(mascot)s
     <div class="hero__txt">
-      <h1>我的政治课表<small>2026 学年第一学期 · 民族团结班 · 任教 125 / 128 / 129 班</small></h1>
+      <h1>%(title)s<small>%(subtitle)s</small></h1>
       <div class="stats">
         <span class="stat">每周 <b>9</b> 节</span>
         <span class="stat">周一到周五 <b>每周相同</b></span>
@@ -301,12 +330,13 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
       </div>
     </div>
     <div class="deco">%(deco)s</div>
+    <div class="by">%(sign)s 制</div>
   </div>
 
   <div class="glance">%(glance)s</div>
 
   <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
-    <span class="kicker">彩色格子＝我要上课，灰点＝没我的课</span><span class="bar"></span></div>
+    <span class="kicker">彩色格子＝要上课，小圆点＝没课</span><span class="bar"></span></div>
   <div class="grid">
       %(grid)s
   </div>
@@ -334,14 +364,20 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
     </div>
   </div>
 
-  <div class="foot">依据：民族团结班课表（8.25 版）＋ 萧山三中作息时间表　·　本学期每周相同　·　只显示政治课</div>
+  <div class="sign">
+    <span class="sign__l"></span>
+    <span class="sign__p">%(hearts)s 这张课表是 <b>%(sign)s</b> 做的</span>
+    <span class="sign__l"></span>
+  </div>
 </div></body></html>"""
 
 for key, c in THEMES.items():
     html = PAGE % dict(
-        css=CSS, brand=c["brand"], accent=c["accent"], ink=c["ink"], bg=c["bg"], card=c["card"],
-        soft=c["soft"], line=c["line"], muted=c["muted"], warn=c["warn"], warnbg=c["warnbg"],
-        mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"],
+        css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
+        bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
+        muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
+        mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
+        title=TITLE, subtitle=SUBTITLE, sign=SIGN,
         glance=build_glance(), grid=build_grid(),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
