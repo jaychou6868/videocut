@@ -37,16 +37,24 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 
 /* ---------- 速览 ---------- */
 .glance{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:22px}
-.gl{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 10px 14px;
-    text-align:center;box-shadow:0 6px 0 var(--line);overflow:hidden}
+.gl{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 10px 12px;
+    text-align:center;box-shadow:0 6px 0 var(--line);overflow:hidden;
+    display:flex;flex-direction:column}
 .gl__d{font-size:26px;color:#fff;line-height:1.35;margin:0 -10px;
        background:linear-gradient(135deg,var(--brand),var(--brand2))}
-.gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 8px}
-.gl__i{background:var(--soft);border-radius:14px;padding:6px 4px;margin-top:7px}
+.gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 4px}
+.gl__i{background:var(--soft);border-radius:14px;padding:7px 4px 8px;margin-top:7px}
+.gl__p{display:block;font-size:13px;font-weight:800;color:var(--brand);letter-spacing:.5px}
+.gl__t{display:block;font-size:16px;color:var(--ink);opacity:.72;font-weight:700;margin-top:2px;
+       font-family:'Fredoka','Noto Sans SC',sans-serif}
+.gl__sp{margin-top:auto;padding-top:11px;font-size:15px;font-weight:700;color:var(--ink);opacity:.66;
+        font-family:'Fredoka','Noto Sans SC',sans-serif;white-space:nowrap}
+.gl__b2b{display:inline-block;font-style:normal;font-size:12.5px;font-weight:800;color:#fff;
+         background:var(--brand);border-radius:99px;padding:1px 8px;margin-left:5px;
+         font-family:'Noto Sans SC',sans-serif}
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
 .gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
             font-family:'Noto Sans SC',sans-serif}
-.gl__i span{display:block;font-size:17px;color:var(--ink);opacity:.7;font-weight:700;margin-top:2px}
 .gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
 
 /* ---------- 主表 ---------- */
@@ -140,31 +148,36 @@ h2{font-size:30px}
       <div class="gl">
         <div class="gl__d">周一</div>
         <div class="gl__n">1 节</div>
-        <div class="gl__i"><b>125<em>班</em></b><span>11:20</span></div>
+        <div class="gl__i"><span class="gl__p">第5节</span><b>125<em>班</em></b><span class="gl__t">11:20—12:00</span></div>
+        <div class="gl__sp">⏱ 11:20—12:00</div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周二</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>129<em>班</em></b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>128<em>班</em></b><span>16:05</span></div>
+        <div class="gl__i"><span class="gl__p">第8节</span><b>129<em>班</em></b><span class="gl__t">15:15—15:55</span></div><div class="gl__i gl__i--nine"><span class="gl__p">第9节</span><b>128<em>班</em></b><span class="gl__t">16:05—17:05</span></div>
+        <div class="gl__sp">⏱ 15:15—17:05<em class="gl__b2b">连堂</em></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周三</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>125<em>班</em></b><span>7:40</span></div><div class="gl__i"><b>129<em>班</em></b><span>11:20</span></div>
+        <div class="gl__i"><span class="gl__p">第1节</span><b>125<em>班</em></b><span class="gl__t">7:40—8:20</span></div><div class="gl__i"><span class="gl__p">第5节</span><b>129<em>班</em></b><span class="gl__t">11:20—12:00</span></div>
+        <div class="gl__sp">⏱ 7:40—12:00</div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周四</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>128<em>班</em></b><span>15:15</span></div><div class="gl__i gl__i--nine"><b>129<em>班</em></b><span>16:05</span></div>
+        <div class="gl__i"><span class="gl__p">第8节</span><b>128<em>班</em></b><span class="gl__t">15:15—15:55</span></div><div class="gl__i gl__i--nine"><span class="gl__p">第9节</span><b>129<em>班</em></b><span class="gl__t">16:05—17:05</span></div>
+        <div class="gl__sp">⏱ 15:15—17:05<em class="gl__b2b">连堂</em></div>
       </div>
 
       <div class="gl">
         <div class="gl__d">周五</div>
         <div class="gl__n">2 节</div>
-        <div class="gl__i"><b>125<em>班</em></b><span>8:30</span></div><div class="gl__i"><b>128<em>班</em></b><span>9:35</span></div>
+        <div class="gl__i"><span class="gl__p">第2节</span><b>125<em>班</em></b><span class="gl__t">8:30—9:10</span></div><div class="gl__i"><span class="gl__p">第3节</span><b>128<em>班</em></b><span class="gl__t">9:35—10:15</span></div>
+        <div class="gl__sp">⏱ 8:30—10:15</div>
       </div></div>
 
   <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
@@ -274,6 +287,8 @@ h2{font-size:30px}
     <div class="note">
       <h3>📌 小提醒</h3>
       <ul>
+        <li><b>周二、周四是连堂</b>，第8节下课到第9节上课只隔 10 分钟</li>
+        <li>而且两天<b>换班顺序正好相反</b>：周二 129→128，周四 128→129</li>
         <li>周一 第6节是<b>全校会议</b>，全年级不上课</li>
         <li>「课间活动」作息表未标时间，按 7:25—7:40 推算</li>
       </ul>

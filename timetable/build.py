@@ -146,19 +146,37 @@ def user_mascot(key):
     return None
 
 # ---------------- HTML 片段 ----------------
+def _mins(t):
+    h, m = t.split(":")
+    return int(h) * 60 + int(m)
+
+def day_span(ls):
+    """当天从第一节开始到最后一节结束的跨度，以及是否连堂（间隔≤15分钟）"""
+    first = PERIOD_TIME[ls[0][1]].split("—")[0]
+    last = PERIOD_TIME[ls[-1][1]].split("—")[-1]
+    back2back = any(_mins(PERIOD_TIME[b[1]].split("—")[0]) -
+                    _mins(PERIOD_TIME[a[1]].split("—")[-1]) <= 15
+                    for a, b in zip(ls, ls[1:]))
+    return f"{first}—{last}", back2back
+
 def build_glance():
     out = []
     for d in range(1, 6):
         ls = day_lessons(d)
         items = "".join(
             f'<div class="gl__i{" gl__i--nine" if p == 9 else ""}">'
-            f'<b>{k}<em>班</em></b><span>{PERIOD_TIME[p].split("—")[0]}</span></div>'
+            f'<span class="gl__p">第{p}节</span>'
+            f'<b>{k}<em>班</em></b>'
+            f'<span class="gl__t">{PERIOD_TIME[p]}</span></div>'
             for (_, p, k) in ls)
+        span, b2b = day_span(ls)
+        tag = '<em class="gl__b2b">连堂</em>' if b2b else ""
         out.append(f'''
       <div class="gl">
         <div class="gl__d">{DAYS[d-1]}</div>
         <div class="gl__n">{len(ls)} 节</div>
         {items}
+        <div class="gl__sp">⏱ {span}{tag}</div>
       </div>''')
     return "\n".join(out)
 
@@ -233,16 +251,24 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 
 /* ---------- 速览 ---------- */
 .glance{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-top:22px}
-.gl{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 10px 14px;
-    text-align:center;box-shadow:0 6px 0 var(--line);overflow:hidden}
+.gl{background:var(--card);border:3px solid var(--ink);border-radius:22px;padding:0 10px 12px;
+    text-align:center;box-shadow:0 6px 0 var(--line);overflow:hidden;
+    display:flex;flex-direction:column}
 .gl__d{font-size:26px;color:#fff;line-height:1.35;margin:0 -10px;
        background:linear-gradient(135deg,var(--brand),var(--brand2))}
-.gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 8px}
-.gl__i{background:var(--soft);border-radius:14px;padding:6px 4px;margin-top:7px}
+.gl__n{font-size:13.5px;color:var(--muted);font-weight:700;margin:7px 0 4px}
+.gl__i{background:var(--soft);border-radius:14px;padding:7px 4px 8px;margin-top:7px}
+.gl__p{display:block;font-size:13px;font-weight:800;color:var(--brand);letter-spacing:.5px}
+.gl__t{display:block;font-size:16px;color:var(--ink);opacity:.72;font-weight:700;margin-top:2px;
+       font-family:'Fredoka','Noto Sans SC',sans-serif}
+.gl__sp{margin-top:auto;padding-top:11px;font-size:15px;font-weight:700;color:var(--ink);opacity:.66;
+        font-family:'Fredoka','Noto Sans SC',sans-serif;white-space:nowrap}
+.gl__b2b{display:inline-block;font-style:normal;font-size:12.5px;font-weight:800;color:#fff;
+         background:var(--brand);border-radius:99px;padding:1px 8px;margin-left:5px;
+         font-family:'Noto Sans SC',sans-serif}
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
 .gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
             font-family:'Noto Sans SC',sans-serif}
-.gl__i span{display:block;font-size:17px;color:var(--ink);opacity:.7;font-weight:700;margin-top:2px}
 .gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
 
 /* ---------- 主表 ---------- */
@@ -356,6 +382,8 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
     <div class="note">
       <h3>📌 小提醒</h3>
       <ul>
+        <li><b>周二、周四是连堂</b>，第8节下课到第9节上课只隔 10 分钟</li>
+        <li>而且两天<b>换班顺序正好相反</b>：周二 129→128，周四 128→129</li>
         <li>周一 第6节是<b>全校会议</b>，全年级不上课</li>
         <li>「课间活动」作息表未标时间，按 7:25—7:40 推算</li>
       </ul>
