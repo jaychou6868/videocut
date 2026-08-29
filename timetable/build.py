@@ -404,7 +404,8 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
   </div>
 </div></body></html>"""
 
-for key, c in THEMES.items():
+def main():
+  for key, c in THEMES.items():
     html = PAGE % dict(
         css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
         bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
@@ -418,6 +419,9 @@ for key, c in THEMES.items():
         f.write(html)
     print("wrote", path)
 
-with open(os.path.join(OUT, "themes.json"), "w", encoding="utf-8") as f:
+  with open(os.path.join(OUT, "themes.json"), "w", encoding="utf-8") as f:
     json.dump({k: v["file"] for k, v in THEMES.items()}, f, ensure_ascii=False)
-print("总课数:", len(MY))
+  print("总课数:", len(MY))
+
+if __name__ == "__main__":
+    main()
