@@ -104,6 +104,22 @@ def bunny_svg(c):
   <circle cx="46" cy="68" r="4.6" fill="{c['ink']}"/><circle cx="74" cy="68" r="4.6" fill="{c['ink']}"/>
 </svg>'''
 
+
+def beaver_svg(c):
+    return f'''
+<svg viewBox="0 0 120 108" class="mascot" aria-hidden="true">
+  <path d="M60 20 q3 -12 10 -16" fill="none" stroke="{c['ink']}" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="26" cy="40" r="11" fill="{c['brand2']}" stroke="{c['ink']}" stroke-width="3"/>
+  <circle cx="94" cy="40" r="11" fill="{c['brand2']}" stroke="{c['ink']}" stroke-width="3"/>
+  <ellipse cx="60" cy="62" rx="42" ry="38" fill="{c['brand2']}" stroke="{c['ink']}" stroke-width="3"/>
+  <circle cx="45" cy="54" r="5" fill="{c['ink']}"/>
+  <circle cx="76" cy="54" r="5" fill="{c['ink']}"/>
+  <ellipse cx="60" cy="70" rx="15" ry="12" fill="#4A1F3D"/>
+  <ellipse cx="55" cy="66" rx="4" ry="3" fill="#fff" opacity=".35"/>
+  <rect x="54" y="82" width="5.5" height="11" rx="2" fill="#fff" stroke="{c['ink']}" stroke-width="2"/>
+  <rect x="60.5" y="82" width="5.5" height="11" rx="2" fill="#fff" stroke="{c['ink']}" stroke-width="2"/>
+</svg>'''
+
 THEMES = {
     "kitty": dict(
         file="政治课表_Kitty版.png",
@@ -118,6 +134,13 @@ THEMES = {
         bg="#EFF7FF", card="#FFFFFF", soft="#E1F0FF", line="#CCE4F8", dot="#D8EAFB",
         muted="#7E93A8", warn="#EF7C3C", warn2="#FFA36B", warnbg="#FFF0E6",
         mascot=puppy_svg, deco="☁️ 🐾 ⭐", hearts="🐾",
+    ),
+    "loopy": dict(
+        file="政治课表_Loopy版.png",
+        brand="#E8407A", brand2="#FF8FB4", accent="#FFC93C", ink="#3D2430",
+        bg="#FFF0F5", card="#FFFFFF", soft="#FFE3EE", line="#F8CFDF", dot="#FBDCE8",
+        muted="#9C8290", warn="#6C4BB6", warn2="#9C7BDE", warnbg="#F1ECFB",
+        mascot=beaver_svg, deco="🌸 💖 ⭐", hearts="🌸",
     ),
     "bunny": dict(
         file="政治课表_米菲版.png",

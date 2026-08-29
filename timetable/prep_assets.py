@@ -14,6 +14,7 @@ JOBS = [
     ("puppy", f"{UP}/b1c48e29-image.jpg", 34, None),                  # 帕恰狗（浅蓝壁纸）
     ("kitty", f"{UP}/6808d15a-image.jpg", 40, (0.00, 0.00, 1.00, 0.93)),  # Hello Kitty（粉底）
     ("bunny", f"{UP}/c5d2e410-image.jpg", 60, None),                  # 米菲（深蓝底）
+    ("loopy", f"{UP}/8477f2b2-image.jpg", 46, None),                  # Loopy（玫红底）
 ]
 
 
