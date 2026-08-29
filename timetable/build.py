@@ -350,12 +350,20 @@ h2{font-size:30px}
 .notes{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
 .note{background:var(--card);border:3px solid var(--ink);border-radius:24px;padding:16px 20px;
       box-shadow:0 6px 0 var(--line)}
-.note--warn{background:var(--warnbg);border-color:var(--warn);box-shadow:0 6px 0 var(--warn);
-            grid-column:1/-1}
+.note--warn{background:var(--warnbg);border-color:var(--warn);box-shadow:0 6px 0 var(--warn)}
 .note h3{font-size:22px;margin-bottom:8px}
 .note li,.note p{font-size:17px;line-height:1.7;font-weight:500}
 .note ul{margin-left:20px}
 .note b{color:var(--warn)}
+.sr{display:flex;gap:12px;margin-top:4px}
+.sr__i{flex:1;background:var(--soft);border:2.5px solid var(--ink);border-radius:16px;
+       padding:9px 8px 10px;text-align:center}
+.sr__d{display:block;font-size:14px;color:var(--muted);font-weight:700;margin-bottom:2px}
+.sr__i b{font-size:26px;color:var(--brand);
+         font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weight:400}
+.sr__i--b b{color:var(--warn)}
+.sr__t{margin-top:10px;text-align:center;font-size:15px;font-weight:700;color:var(--ink);opacity:.7}
+
 
 /* ---------- 署名 ---------- */
 .sign{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:30px}
@@ -403,20 +411,12 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
          涉及：<b>周二 128班</b> ／ <b>周四 129班</b>。</p>
     </div>
     <div class="note">
-      <h3>📌 小提醒</h3>
-      <ul>
-        <li><b>周二、周四是连堂</b>，第8节下课到第9节上课只隔 10 分钟</li>
-        <li>而且两天<b>换班顺序正好相反</b>：周二 129→128，周四 128→129</li>
-        <li>周一 第6节是<b>全校会议</b>，全年级不上课</li>
-        <li>「课间活动」作息表未标时间，按 7:25—7:40 推算</li>
-      </ul>
-    </div>
-    <div class="note">
       <h3>📖 早自修（全校统一）</h3>
-      <ul>
-        <li>周一 · 周三 · 周五 → <b>英语</b>　　周二 · 周四 → <b>语文</b></li>
-        <li>早读 6:30—7:00　早自修 7:00—7:25</li>
-      </ul>
+      <div class="sr">
+        <div class="sr__i"><span class="sr__d">周一 · 周三 · 周五</span><b>英语</b></div>
+        <div class="sr__i sr__i--b"><span class="sr__d">周二 · 周四</span><b>语文</b></div>
+      </div>
+      <div class="sr__t">早读 6:30—7:00　·　早自修 7:00—7:25</div>
     </div>
   </div>
 

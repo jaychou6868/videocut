@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""电脑横版（16:9）课表：星期为行、节次为列，一屏看完不用滚动。
+"""电脑横版（16:9）课表：星期为列（横排）、节次为行（竖排），与手机版方向一致。
 
 数据与主题直接复用 build.py，只换版式。
 """
@@ -16,33 +16,40 @@ WIDE_FILES = {k: v["file"].replace(".png", "_横版.png") for k, v in THEMES.ite
 
 
 def build_head():
-    cells = ['<div class="wh wh--day">星期</div>']
-    for p in PERIODS:
-        warn = " wh--warn" if p in WARN_P else ""
-        cells.append(f'<div class="wh{warn}"><b>第{p}节</b><i>{PERIOD_TIME[p]}</i></div>')
-    cells.append('<div class="wh wh--day">当天</div>')
+    """表头：左上角是节次栏，右边横排周一~周五"""
+    cells = ['<div class="wh wh--corner">节次 · 时间</div>']
+    cells += [f'<div class="wh"><span>{d}</span></div>' for d in DAYS]
     return "".join(cells)
 
 
 def build_rows():
+    """每行一个节次，行内横排五天；最后补一行当天跨度"""
     out = []
-    for d in range(1, 6):
-        out.append(f'<div class="wd">{DAYS[d-1]}</div>')
-        for p in PERIODS:
+    for p in PERIODS:
+        warn = p in WARN_P
+        mine = any(m[1] == p for m in MY)
+        cls = "wt" + (" wt--warn" if warn else (" wt--mine" if mine else ""))
+        badge = '<span class="wtag">待确认</span>' if warn else ""
+        out.append(f'<div class="{cls}"><b>第{p}节</b>{badge}<i>{PERIOD_TIME[p]}</i></div>')
+        for d in range(1, 6):
             k = lesson_at(d, p)
             note = NOTE_CELL.get((d, p))
+            last = " wc--last" if d == 5 else ""
             if k:
-                pill = "wpill" + (" wpill--nine" if p in WARN_P else "")
-                out.append(f'<div class="wc wc--on"><div class="{pill}">'
+                pill = "wpill" + (" wpill--nine" if warn else "")
+                out.append(f'<div class="wc wc--on{last}"><div class="{pill}">'
                            f'<span class="wpill__k">{k}<em>班</em></span>'
                            f'<span class="wpill__u">政治</span></div></div>')
             elif note:
-                out.append(f'<div class="wc wc--note"><span>{note}</span></div>')
+                out.append(f'<div class="wc wc--note{last}"><span>{note}</span></div>')
             else:
-                out.append('<div class="wc"><span class="wdot"></span></div>')
+                out.append(f'<div class="wc{last}"><span class="wdot"></span></div>')
+
+    out.append('<div class="wt wt--foot"><b>当天</b><i>上课跨度</i></div>')
+    for d in range(1, 6):
         span, b2b = day_span(day_lessons(d))
         tag = '<em class="wb2b">连堂</em>' if b2b else ""
-        out.append(f'<div class="wsp">{span}{tag}</div>')
+        out.append(f'<div class="wsp{" wsp--last" if d == 5 else ""}">{span}{tag}</div>')
     return "".join(out)
 
 
@@ -83,39 +90,52 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
     font-size:14px;font-weight:700;color:var(--brand);white-space:nowrap}
 .deco{position:absolute;left:152px;bottom:9px;font-size:17px;letter-spacing:5px;opacity:.75;z-index:1}
 
-/* 主表：星期为行、节次为列 */
-.grid{flex:none;display:grid;grid-template-columns:126px repeat(9,1fr) 176px;
+/* 主表：星期为列（横排）、节次为行（竖排） */
+.grid{flex:none;display:grid;grid-template-columns:268px repeat(5,1fr);
       background:var(--card);border:4px solid var(--ink);border-radius:24px;overflow:hidden;
       box-shadow:0 8px 0 var(--line)}
 .wh{background:linear-gradient(150deg,var(--brand),var(--brand2));color:#fff;text-align:center;
-    padding:9px 2px 10px;border-right:2px solid rgba(255,255,255,.28)}
-.wh b{display:block;font-size:23px;line-height:1.15}
-.wh i{display:block;font-style:normal;font-size:14.5px;font-weight:600;opacity:.95;margin-top:1px}
-.wh--warn{background:linear-gradient(150deg,var(--warn),var(--warn2))}
-.wh--day{background:var(--ink);font-size:17px;font-weight:700;letter-spacing:3px;
-         display:flex;align-items:center;justify-content:center;
-         font-family:'Noto Sans SC',sans-serif;border-right:none}
-.wd{background:var(--soft);border-bottom:2px solid var(--line);border-right:2px solid var(--line);
-    display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--brand)}
-.wc{border-bottom:2px solid var(--line);border-right:2px solid var(--line);height:92px;
-    display:flex;align-items:center;justify-content:center;padding:7px 8px}
+    font-size:27px;padding:12px 0 11px;border-right:2px solid rgba(255,255,255,.28)}
+.wh:last-child{border-right:none}
+.wh--corner{background:var(--ink);font-size:16px;font-weight:700;letter-spacing:2px;
+            display:flex;align-items:center;justify-content:center;
+            font-family:'Noto Sans SC',sans-serif;border-right:none}
+.wt{display:flex;align-items:center;gap:8px;padding:0 15px;background:var(--card);
+    border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
+.wt b{font-size:21px;line-height:1;white-space:nowrap}
+.wt i{margin-left:auto;font-style:normal;font-size:17.5px;font-weight:700;
+      color:var(--ink);opacity:.78;white-space:nowrap}
+.wt--mine{background:var(--soft);box-shadow:inset 6px 0 0 var(--brand)}
+.wt--mine b{color:var(--brand)}
+.wt--warn{background:var(--warnbg);box-shadow:inset 6px 0 0 var(--warn)}
+.wt--warn b{color:var(--warn)}
+.wt--foot{background:var(--bg);border-bottom:none}
+.wt--foot b{font-size:18px;opacity:.8}
+.wt--foot i{font-size:14px;opacity:.6}
+.wtag{font-size:11.5px;font-weight:800;color:#fff;background:var(--warn);border-radius:99px;
+      padding:1px 7px;font-family:'Noto Sans SC',sans-serif}
+.wc{height:48px;display:flex;align-items:center;justify-content:center;padding:5px 8px;
+    border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
+.wc--last{border-right:none}
 .wdot{width:9px;height:9px;border-radius:50%;background:var(--line)}
-.wpill{width:100%;height:100%;border-radius:15px;display:flex;flex-direction:column;
-       align-items:center;justify-content:center;color:#fff;
+.wpill{display:flex;align-items:center;justify-content:center;gap:8px;height:100%;
+       padding:0 20px;border-radius:13px;color:#fff;
        background:linear-gradient(150deg,var(--brand2),var(--brand));
-       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 11px rgba(0,0,0,.13)}
+       box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 10px rgba(0,0,0,.13)}
 .wpill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
-.wpill__k{font-size:30px;font-weight:800;line-height:1.05}
-.wpill__k em{font-size:15px;font-style:normal;font-weight:700;margin-left:2px;
+.wpill__k{font-size:25px;font-weight:800;line-height:1}
+.wpill__k em{font-size:14px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
-.wpill__u{font-size:12.5px;font-weight:700;opacity:.95;letter-spacing:1.5px;margin-top:1px}
+.wpill__u{font-size:13px;font-weight:700;opacity:.92;letter-spacing:1px}
 .wc--note{background:var(--bg)}
 .wc--note span{font-size:14px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
-               border-radius:11px;padding:5px 9px}
-.wsp{border-bottom:2px solid var(--line);background:var(--bg);display:flex;align-items:center;
-     justify-content:center;gap:7px;font-size:16px;font-weight:700;color:var(--ink);opacity:.8}
+               border-radius:11px;padding:4px 10px}
+.wsp{height:46px;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:7px;
+     font-size:16px;font-weight:700;color:var(--ink);opacity:.85;
+     border-right:2px solid var(--line)}
+.wsp--last{border-right:none}
 .wb2b{font-style:normal;font-size:12.5px;font-weight:800;color:#fff;background:var(--brand);
-      border-radius:99px;padding:1px 8px;font-family:'Noto Sans SC',sans-serif;opacity:1}
+      border-radius:99px;padding:1px 8px;font-family:'Noto Sans SC',sans-serif}
 
 /* 作息条 */
 .routine{flex:none;background:var(--card);border:3px solid var(--ink);border-radius:22px;
@@ -129,7 +149,7 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .rc__t{font-size:15px;font-weight:700;color:var(--muted)}
 
 /* 说明 */
-.notes{flex:1;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;min-height:0}
+.notes{flex:1;display:grid;grid-template-columns:1.6fr 1fr;gap:14px;min-height:0}
 .note{background:var(--card);border:3px solid var(--ink);border-radius:20px;padding:10px 16px;
       box-shadow:0 5px 0 var(--line);overflow:hidden}
 .note--warn{background:var(--warnbg);border-color:var(--warn);box-shadow:0 5px 0 var(--warn)}
@@ -137,6 +157,15 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .note li,.note p{font-size:14.5px;line-height:1.55;font-weight:500}
 .note ul{margin-left:19px}
 .note b{color:var(--warn)}
+.sr{display:flex;gap:9px;margin-top:3px}
+.sr__i{flex:1;background:var(--soft);border:2.5px solid var(--ink);border-radius:14px;
+       padding:6px 6px 7px;text-align:center}
+.sr__d{display:block;font-size:12.5px;color:var(--muted);font-weight:700}
+.sr__i b{font-size:21px;color:var(--brand);
+         font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weight:400}
+.sr__i--b b{color:var(--warn)}
+.sr__t{margin-top:7px;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink);opacity:.7}
+
 .sign{flex:none;display:flex;align-items:center;justify-content:center;gap:12px}
 .sign__l{height:3px;width:150px;border-radius:99px;background:var(--line)}
 .sign__p{background:var(--card);border:2.5px solid var(--brand);border-radius:999px;padding:5px 20px;
@@ -176,20 +205,12 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
          涉及：<b>周二 128班</b> ／ <b>周四 129班</b>。</p>
     </div>
     <div class="note">
-      <h3>📌 小提醒</h3>
-      <ul>
-        <li><b>周二、周四连堂</b>，第8节下课到第9节只隔 10 分钟</li>
-        <li>两天<b>换班顺序相反</b>：周二 129→128，周四 128→129</li>
-        <li>周一 第6节全校会议，不上课</li>
-      </ul>
-    </div>
-    <div class="note">
       <h3>📖 早自修（全校统一）</h3>
-      <ul>
-        <li>周一 · 周三 · 周五 → <b>英语</b></li>
-        <li>周二 · 周四 → <b>语文</b></li>
-        <li>早读 6:30—7:00　早自修 7:00—7:25</li>
-      </ul>
+      <div class="sr">
+        <div class="sr__i"><span class="sr__d">周一 · 周三 · 周五</span><b>英语</b></div>
+        <div class="sr__i sr__i--b"><span class="sr__d">周二 · 周四</span><b>语文</b></div>
+      </div>
+      <div class="sr__t">早读 6:30—7:00　·　早自修 7:00—7:25</div>
     </div>
   </div>
 
