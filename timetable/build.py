@@ -132,6 +132,25 @@ THEMES = {
     ),
 }
 
+# ---------------- 自备贴纸 ----------------
+# 把图片放到 timetable/assets/ 下，命名 mascot_kitty.* / mascot_puppy.* / mascot_bunny.*
+# （png/jpg/webp/gif/svg 都行，建议 PNG 透明底），就会自动替换掉手绘形象。
+ASSETS = os.path.join(OUT, "assets")
+MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+        ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml"}
+
+def user_mascot(key):
+    if not os.path.isdir(ASSETS):
+        return None
+    for fn in sorted(os.listdir(ASSETS)):
+        stem, ext = os.path.splitext(fn)
+        if stem.lower() == f"mascot_{key}" and ext.lower() in MIME:
+            import base64
+            data = base64.b64encode(open(os.path.join(ASSETS, fn), "rb").read()).decode()
+            print(f"  · {key} 使用自备素材 {fn}")
+            return f'<img class="mascot mascot--img" src="data:{MIME[ext.lower()]};base64,{data}" alt="">'
+    return None
+
 # ---------------- HTML 片段 ----------------
 def build_week_cards(c):
     html = []
@@ -211,6 +230,7 @@ h1,h2,.day__n,.brandname{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;fo
    radial-gradient(circle at 12% 96%,var(--soft) 0 90px,transparent 91px);}
 .hero>*{position:relative}
 .mascot{width:150px;height:135px;flex:none}
+.mascot--img{object-fit:contain;width:160px;height:150px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.10))}
 .hero__txt{flex:1}
 h1{font-size:52px;line-height:1.1;letter-spacing:1px}
 h1 small{display:block;font-size:20px;color:var(--muted);letter-spacing:0;margin-top:8px;
@@ -360,7 +380,7 @@ for key, c in THEMES.items():
         css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
         blush=c["blush"], bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"],
         muted=c["muted"], warn=c["warn"], warnbg=c["warnbg"],
-        mascot=c["mascot"](c), deco="".join(c["deco"]),
+        mascot=(user_mascot(key) or c["mascot"](c)), deco="".join(c["deco"]),
         week=build_week_cards(c), timeline=build_timeline(c),
     )
     path = os.path.join(OUT, f"tt_{key}.html")

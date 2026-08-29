@@ -1,0 +1,8 @@
+把你自己的贴纸图片放进这个 assets 文件夹，按下面命名，跑一次 build.py + shot.py 就会自动替换掉手绘形象：
+
+  mascot_kitty.png   → 小猫版（红白粉）头像位
+  mascot_puppy.png   → 小狗版（蓝白）头像位
+  mascot_bunny.png   → 小兔版（橙蓝）头像位
+
+支持 png / jpg / webp / gif / svg，建议 PNG 透明底、短边 400px 以上。
+找不到对应文件时，会自动用原来的手绘形象，不会报错。
