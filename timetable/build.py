@@ -157,6 +157,28 @@ ASSETS = os.path.join(OUT, "assets")
 MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
         ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml"}
 
+def mascot_uri(key):
+    """角色图的 data URI，用于表格中央的背景水印"""
+    if not os.path.isdir(ASSETS):
+        return None
+    for fn in sorted(os.listdir(ASSETS)):
+        stem, ext = os.path.splitext(fn)
+        if stem.lower() == f"mascot_{key}" and ext.lower() in MIME:
+            data = base64.b64encode(open(os.path.join(ASSETS, fn), "rb").read()).decode()
+            return f"data:{MIME[ext.lower()]};base64,{data}"
+    return None
+
+
+def watermark_css(key, size):
+    uri = mascot_uri(key)
+    if not uri:
+        return ""
+    return ("\n.grid{position:relative}"
+            "\n.grid>*{position:relative;z-index:1}"
+            "\n.grid:before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;"
+            f"opacity:.11;background:url('{uri}') center center / {size} auto no-repeat}}")
+
+
 def user_mascot(key):
     if not os.path.isdir(ASSETS):
         return None
@@ -220,7 +242,7 @@ def build_grid():
         mine = any(m[1] == p for m in MY)
         warn = s.get("warn")
         tcls = "tc" + (" tc--mine" if mine else "") + (" tc--warn" if warn else "")
-        badge = '<span class="tag tag--warn">待确认</span>' if warn else ""
+        badge = ""
         sub = f'<em>{s["sub"]}</em>' if s.get("sub") else ""
         cells.append(f'<div class="{tcls}"><b>{s["name"]}</b>{badge}<i>{s["t"]}</i>{sub}</div>')
 
@@ -308,23 +330,22 @@ h2{font-size:30px}
 .hd--t{font-size:19px;font-weight:700;background:var(--ink);color:#fff;
        display:flex;align-items:center;justify-content:center;
        font-family:'Noto Sans SC',sans-serif;letter-spacing:3px}
-.tc{padding:11px 8px 11px 18px;border-bottom:2px solid var(--line);border-right:2px solid var(--line);
-    background:var(--card)}
+.tc{padding:11px 8px 11px 18px;border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .tc b{display:block;font-size:23px;font-weight:800;line-height:1.2}
 .tc i{display:block;font-style:normal;font-size:22px;color:var(--ink);opacity:.78;
       font-weight:700;margin-top:3px;letter-spacing:.3px}
 .tc em{display:block;font-style:normal;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35}
-.tc--soft{display:flex;align-items:center;background:var(--bg)}
+.tc--soft{display:flex;align-items:center;background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .tc--soft i{font-size:20px;margin:0;opacity:.7;font-weight:700}
-.tc--mine{background:var(--soft);box-shadow:inset 7px 0 0 var(--brand)}
+.tc--mine{background:color-mix(in srgb,var(--soft) 76%,transparent);box-shadow:inset 7px 0 0 var(--brand)}
 .tc--mine b{color:var(--brand)}
-.tc--warn{background:var(--warnbg);box-shadow:inset 7px 0 0 var(--warn)}
+.tc--warn{background:color-mix(in srgb,var(--warnbg) 76%,transparent);box-shadow:inset 7px 0 0 var(--warn)}
 .tc--warn b{color:var(--warn)}
 .tag{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:1px 8px;
      border:2px solid var(--line);color:var(--muted);margin-left:3px;vertical-align:2px}
 .tag--warn{background:var(--warn);color:#fff;border-color:var(--warn)}
 .c{border-bottom:2px solid var(--line);border-right:2px solid var(--line);min-height:78px;
-   display:flex;align-items:center;justify-content:center;padding:7px 8px;background:var(--card)}
+   display:flex;align-items:center;justify-content:center;padding:7px 8px}
 .c--last{border-right:none}
 .c__dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
 .pill{width:100%;height:100%;border-radius:17px;display:flex;flex-direction:column;
@@ -336,10 +357,10 @@ h2{font-size:30px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
 .pill__u{font-size:13px;font-weight:700;opacity:.95;letter-spacing:1.5px;margin-top:1px}
-.c--note{background:var(--bg)}
+.c--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
               border-radius:12px;padding:5px 10px}
-.bd{grid-column:2 / -1;border-bottom:2px solid var(--line);background:var(--bg);
+.bd{grid-column:2 / -1;border-bottom:2px solid var(--line);background:color-mix(in srgb,var(--bg) 76%,transparent);
     display:flex;align-items:center;gap:10px;padding:9px 18px;min-height:50px}
 .bd__n{font-size:20px;font-weight:700;color:var(--ink);opacity:.72}
 .bd__s{font-size:15px;color:var(--muted);opacity:.85}
@@ -355,6 +376,11 @@ h2{font-size:30px}
 .note li,.note p{font-size:17px;line-height:1.7;font-weight:500}
 .note ul{margin-left:20px}
 .note b{color:var(--warn)}
+.notes{display:block;margin-top:18px}
+.note--sr{display:flex;align-items:center;gap:26px}
+.note--sr h3{margin:0;white-space:nowrap}
+.note--sr .sr{flex:1;margin:0}
+.note--sr .sr__t{margin:0;white-space:nowrap}
 .sr{display:flex;gap:12px;margin-top:4px}
 .sr__i{flex:1;background:var(--soft);border:2.5px solid var(--ink);border-radius:16px;
        padding:9px 8px 10px;text-align:center}
@@ -378,7 +404,7 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
 --warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;}
-%(css)s</style></head><body><div class="page">
+%(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
     %(mascot)s
@@ -388,7 +414,6 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
         <span class="stat">每周 <b>9</b> 节</span>
         <span class="stat">周一到周五 <b>每周相同</b></span>
         <span class="stat">最早 <b>7:40</b> 上课</span>
-        <span class="stat">第9节 <b>2</b> 节待确认</span>
       </div>
     </div>
     <div class="deco">%(deco)s</div>
@@ -404,13 +429,7 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
   </div>
 
   <div class="notes">
-    <div class="note note--warn">
-      <h3>⚠️ 第9节 —— 需要问清楚</h3>
-      <p>课表排到第9节，但作息表上没有「第9节」，只有 <b>课外活动 16:05—17:05</b>（60分钟，其他节次都是40分钟）。
-         白天能对上的只有这一格，<b>实际几点上、上多久，建议跟班主任 / 教务确认一次</b>。
-         涉及：<b>周二 128班</b> ／ <b>周四 129班</b>。</p>
-    </div>
-    <div class="note">
+    <div class="note note--sr">
       <h3>📖 早自修（全校统一）</h3>
       <div class="sr">
         <div class="sr__i"><span class="sr__d">周一 · 周三 · 周五</span><b>英语</b></div>
@@ -435,7 +454,7 @@ def main():
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(),
+        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '460px'),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:

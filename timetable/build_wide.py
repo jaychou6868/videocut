@@ -6,7 +6,8 @@
 import os, json
 
 from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, MY, DAYS,
-                   NOTE_CELL, THEMES, lesson_at, day_lessons, day_span, user_mascot)
+                   NOTE_CELL, THEMES, lesson_at, day_lessons, day_span, user_mascot,
+                   watermark_css)
 
 PERIODS = sorted(PERIOD_TIME)                       # 1..9
 WARN_P = {s["p"] for s in SCHEDULE if s.get("warn") and s.get("p")}
@@ -29,7 +30,7 @@ def build_rows():
         warn = p in WARN_P
         mine = any(m[1] == p for m in MY)
         cls = "wt" + (" wt--warn" if warn else (" wt--mine" if mine else ""))
-        badge = '<span class="wtag">待确认</span>' if warn else ""
+        badge = ""
         out.append(f'<div class="{cls}"><b>第{p}节</b>{badge}<i>{PERIOD_TIME[p]}</i></div>')
         for d in range(1, 6):
             k = lesson_at(d, p)
@@ -100,21 +101,21 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .wh--corner{background:var(--ink);font-size:16px;font-weight:700;letter-spacing:2px;
             display:flex;align-items:center;justify-content:center;
             font-family:'Noto Sans SC',sans-serif;border-right:none}
-.wt{display:flex;align-items:center;gap:8px;padding:0 15px;background:var(--card);
+.wt{display:flex;align-items:center;gap:8px;padding:0 15px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wt b{font-size:21px;line-height:1;white-space:nowrap}
 .wt i{margin-left:auto;font-style:normal;font-size:17.5px;font-weight:700;
       color:var(--ink);opacity:.78;white-space:nowrap}
-.wt--mine{background:var(--soft);box-shadow:inset 6px 0 0 var(--brand)}
+.wt--mine{background:color-mix(in srgb,var(--soft) 76%,transparent);box-shadow:inset 6px 0 0 var(--brand)}
 .wt--mine b{color:var(--brand)}
-.wt--warn{background:var(--warnbg);box-shadow:inset 6px 0 0 var(--warn)}
+.wt--warn{background:color-mix(in srgb,var(--warnbg) 76%,transparent);box-shadow:inset 6px 0 0 var(--warn)}
 .wt--warn b{color:var(--warn)}
-.wt--foot{background:var(--bg);border-bottom:none}
+.wt--foot{background:color-mix(in srgb,var(--bg) 76%,transparent);border-bottom:none}
 .wt--foot b{font-size:18px;opacity:.8}
 .wt--foot i{font-size:14px;opacity:.6}
 .wtag{font-size:11.5px;font-weight:800;color:#fff;background:var(--warn);border-radius:99px;
       padding:1px 7px;font-family:'Noto Sans SC',sans-serif}
-.wc{height:48px;display:flex;align-items:center;justify-content:center;padding:5px 8px;
+.wc{height:56px;display:flex;align-items:center;justify-content:center;padding:5px 8px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wc--last{border-right:none}
 .wdot{width:9px;height:9px;border-radius:50%;background:var(--line)}
@@ -127,10 +128,10 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .wpill__k em{font-size:14px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
 .wpill__u{font-size:13px;font-weight:700;opacity:.92;letter-spacing:1px}
-.wc--note{background:var(--bg)}
+.wc--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .wc--note span{font-size:14px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
                border-radius:11px;padding:4px 10px}
-.wsp{height:46px;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:7px;
+.wsp{height:46px;background:color-mix(in srgb,var(--bg) 76%,transparent);display:flex;align-items:center;justify-content:center;gap:7px;
      font-size:16px;font-weight:700;color:var(--ink);opacity:.85;
      border-right:2px solid var(--line)}
 .wsp--last{border-right:none}
@@ -157,6 +158,11 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .note li,.note p{font-size:14.5px;line-height:1.55;font-weight:500}
 .note ul{margin-left:19px}
 .note b{color:var(--warn)}
+.notes{flex:none;display:block}
+.note--sr{display:flex;align-items:center;gap:22px;height:100%}
+.note--sr h3{margin:0;white-space:nowrap}
+.note--sr .sr{flex:1;margin:0}
+.note--sr .sr__t{margin:0;white-space:nowrap}
 .sr{display:flex;gap:9px;margin-top:3px}
 .sr__i{flex:1;background:var(--soft);border:2.5px solid var(--ink);border-radius:14px;
        padding:6px 6px 7px;text-align:center}
@@ -178,7 +184,7 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
 --warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;}
-%(css)s</style></head><body><div class="page">
+%(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
     %(mascot)s
@@ -188,7 +194,6 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
       <span class="stat">每周 <b>9</b> 节</span>
       <span class="stat">周一到周五 <b>每周相同</b></span>
       <span class="stat">最早 <b>7:40</b></span>
-      <span class="stat">第9节 <b>2</b> 节待确认</span>
       <span class="by">%(sign)s 制</span>
     </div>
   </div>
@@ -198,13 +203,7 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
   <div class="routine"><span class="rtitle">⏰ 每天固定作息</span>%(routine)s</div>
 
   <div class="notes">
-    <div class="note note--warn">
-      <h3>⚠️ 第9节 —— 需要问清楚</h3>
-      <p>课表排到第9节，但作息表上没有「第9节」，只有 <b>课外活动 16:05—17:05</b>（60分钟，其他节次都是40分钟）。
-         白天能对上的只有这一格，<b>实际几点上、上多久，建议跟班主任 / 教务确认一次</b>。
-         涉及：<b>周二 128班</b> ／ <b>周四 129班</b>。</p>
-    </div>
-    <div class="note">
+    <div class="note note--sr">
       <h3>📖 早自修（全校统一）</h3>
       <div class="sr">
         <div class="sr__i"><span class="sr__d">周一 · 周三 · 周五</span><b>英语</b></div>
@@ -231,6 +230,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"], deco=c["deco"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(), routine=build_routine(),
+            wm=watermark_css(key, '270px'),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:
