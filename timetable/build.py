@@ -454,7 +454,7 @@ def main():
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '460px'),
+        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '780px'),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:
