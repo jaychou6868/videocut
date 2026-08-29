@@ -231,10 +231,10 @@ h1,h2,.hd span,.gl__d,.sign b{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-ser
       overflow:hidden;background:var(--card);border:4px solid var(--ink);
       box-shadow:0 10px 0 var(--brand),0 10px 26px rgba(0,0,0,.10)}
 .hero:before{content:"";position:absolute;right:-70px;top:-90px;width:340px;height:340px;
-             border-radius:50%;background:linear-gradient(150deg,var(--soft),transparent 70%)}
+             border-radius:50%;background:linear-gradient(150deg,var(--soft),transparent 70%);z-index:0}
 .hero:after{content:"";position:absolute;left:-50px;bottom:-90px;width:220px;height:220px;
-            border-radius:50%;background:var(--soft);opacity:.6}
-.hero>*{position:relative}
+            border-radius:50%;background:var(--soft);opacity:.6;z-index:0}
+.hero>*{position:relative;z-index:1}
 .mascot{width:150px;height:140px;flex:none}
 .mascot--img{width:180px;height:180px;object-fit:contain;
              filter:drop-shadow(0 6px 9px rgba(0,0,0,.15))}
