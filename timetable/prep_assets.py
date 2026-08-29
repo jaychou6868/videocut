@@ -10,11 +10,13 @@ ASSETS = os.path.join(OUT, "assets")
 os.makedirs(ASSETS, exist_ok=True)
 
 UP = "/root/.claude/uploads/42d4cf6b-ae7f-521b-95e1-0219f2719637"
+# (key, 源文件, 容差, 预裁剪比例, 边缘内缩像素)
+# 容差要小于「背景色 ↔ 主体色」的距离，否则漫水填充会吃掉主体。
 JOBS = [
-    ("puppy", f"{UP}/b1c48e29-image.jpg", 34, None),                  # 帕恰狗（浅蓝壁纸）
-    ("kitty", f"{UP}/6808d15a-image.jpg", 40, (0.00, 0.00, 1.00, 0.93)),  # Hello Kitty（粉底）
-    ("bunny", f"{UP}/c5d2e410-image.jpg", 60, None),                  # 米菲（深蓝底）
-    ("loopy", f"{UP}/8477f2b2-image.jpg", 46, None),                  # Loopy（玫红底）
+    ("puppy", f"{UP}/b1c48e29-image.jpg", 34, None, 0),                 # 帕恰狗（浅蓝壁纸）
+    ("kitty", f"{UP}/6808d15a-image.jpg", 40, (0.00, 0.00, 1.00, 0.93), 0),  # Hello Kitty（粉底）
+    ("bunny", f"{UP}/c5d2e410-image.jpg", 60, None, 0),                 # 米菲（深蓝底）
+    ("loopy", f"{UP}/ad0bb3f2-image.jpg", 38, None, 1),                # Loopy（白底全身）
 ]
 
 
@@ -69,7 +71,7 @@ def largest_blob(mask):
     return lab == best
 
 
-for key, path, tol, box in JOBS:
+for key, path, tol, box, erode in JOBS:
     im = Image.open(path).convert("RGB")
     if box:
         w, h = im.size
@@ -82,6 +84,11 @@ for key, path, tol, box in JOBS:
     fg = largest_blob(~bgmask)
 
     alpha = (fg * 255).astype(np.uint8)
+    if erode:                                   # 收边，去掉主体轮廓上的背景色毛边
+        am = Image.fromarray(alpha)
+        for _ in range(erode):
+            am = am.filter(ImageFilter.MinFilter(3))
+        alpha = np.array(am)
     out = Image.fromarray(np.dstack([arr, alpha]), "RGBA")
     # 边缘羽化一点点，去锯齿
     a = Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.7))
