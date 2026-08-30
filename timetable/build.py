@@ -33,8 +33,10 @@ SCHEDULE = [
     dict(t="13:35—14:15",  name="第6节",       kind="class", p=6),
     dict(t="14:25—15:05",  name="第7节",       kind="class", p=7),
     dict(t="15:15—15:55",  name="第8节",       kind="class", p=8),
-    dict(t="16:05—17:05",  name="第9节",       kind="class", p=9, warn=True,
-         sub="作息表上叫「课外活动」，60分钟"),
+    dict(t="16:05—16:10",  name="课外活动",    kind="rest",  icon="🏸", tag="剩余 5 分钟"),
+    dict(t="16:10—16:50",  name="第9节",       kind="class", p=9,
+         sub="在课外活动 16:05—17:05 之内，上课 40 分钟"),
+    dict(t="16:50—17:05",  name="课外活动",    kind="rest",  icon="🏸", tag="剩余 15 分钟"),
     dict(t="17:05",        name="晚餐",        kind="meal",  icon="🍜"),
     dict(t="17:40—18:00",  name="课前活动",    kind="rest",  icon="🚶"),
     dict(t="18:00—18:30",  name="听力",        kind="rest",  icon="🎧"),
@@ -55,6 +57,7 @@ MY = [
     (5, 2, "125"), (5, 3, "128"),
 ]
 DAYS = ["周一", "周二", "周三", "周四", "周五"]      # 周六周日无政治课，不入表
+WARN_P = {s["p"] for s in SCHEDULE if s.get("warn") and s.get("p")}   # 待确认的节次
 NOTE_CELL = {(1, 6): "全校会议"}                     # 非政治课，但影响作息的提示
 
 def lesson_at(d, p):
@@ -169,13 +172,16 @@ def mascot_uri(key):
     return None
 
 
-def watermark_css(key, size):
+def watermark_css(key, size, top=0, bottom=0):
+    """表格中央的角色水印。top/bottom 让它避开表头（周几）和表尾那一行，
+    在真正的空白区域居中，而不是在含表头的整块里居中。"""
     uri = mascot_uri(key)
     if not uri:
         return ""
     return ("\n.grid{position:relative}"
             "\n.grid>*{position:relative;z-index:1}"
-            "\n.grid:before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;"
+            f"\n.grid:before{{content:'';position:absolute;top:{top}px;bottom:{bottom}px;left:0;right:0;"
+            "z-index:0;pointer-events:none;"
             f"opacity:.11;background:url('{uri}') center center / {size} auto no-repeat}}")
 
 
@@ -209,7 +215,7 @@ def build_glance():
     for d in range(1, 6):
         ls = day_lessons(d)
         items = "".join(
-            f'<div class="gl__i{" gl__i--nine" if p == 9 else ""}">'
+            f'<div class="gl__i{" gl__i--nine" if p in WARN_P else ""}">'
             f'<span class="gl__p">第{p}节</span>'
             f'<b>{k}<em>班</em></b>'
             f'<span class="gl__t">{PERIOD_TIME[p]}</span></div>'
@@ -251,7 +257,7 @@ def build_grid():
             note = NOTE_CELL.get((d, p))
             last = " c--last" if d == 5 else ""
             if k:
-                chip = "pill" + (" pill--nine" if p == 9 else "")
+                chip = "pill" + (" pill--nine" if p in WARN_P else "")
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
                              f'<span class="pill__k">{k}<em>班</em></span>'
                              f'<span class="pill__u">政治</span></div></div>')
@@ -454,7 +460,7 @@ def main():
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '780px'),
+        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '780px', top=56),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:

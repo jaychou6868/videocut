@@ -55,10 +55,14 @@ def build_rows():
 
 
 def build_routine():
-    return "".join(
-        f'<div class="rc"><span class="rc__i">{s.get("icon","")}</span>'
-        f'<span class="rc__n">{s["name"]}</span><span class="rc__t">{s["t"]}</span></div>'
-        for s in ROUTINE)
+    out = []
+    for s in ROUTINE:
+        tag = f'<span class="rc__g">{s["tag"]}</span>' if s.get("tag") else ""
+        out.append(f'<div class="rc{" rc--tag" if s.get("tag") else ""}">'
+                   f'<span class="rc__i">{s.get("icon","")}</span>'
+                   f'<span class="rc__n">{s["name"]}</span>'
+                   f'<span class="rc__t">{s["t"]}</span>{tag}</div>')
+    return "".join(out)
 
 
 CSS = """
@@ -148,6 +152,9 @@ h1 small{display:block;font-size:15px;color:var(--muted);margin-top:4px;
 .rc__i{font-size:14px}
 .rc__n{font-size:15px;font-weight:700;color:var(--ink);opacity:.8}
 .rc__t{font-size:15px;font-weight:700;color:var(--muted)}
+.rc--tag{border-color:var(--brand);background:var(--soft)}
+.rc__g{font-size:12.5px;font-weight:800;color:#fff;background:var(--brand);
+       border-radius:99px;padding:1px 8px}
 
 /* 说明 */
 .notes{flex:1;display:grid;grid-template-columns:1.6fr 1fr;gap:14px;min-height:0}
@@ -230,7 +237,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"], deco=c["deco"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(), routine=build_routine(),
-            wm=watermark_css(key, '480px'),
+            wm=watermark_css(key, '440px', top=50, bottom=46),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:
