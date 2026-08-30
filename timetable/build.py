@@ -429,17 +429,6 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 
   <div class="glance">%(glance)s</div>
 
-  <div class="notes">
-    <div class="note note--sr">
-      <h3>📖 早自修（全校统一）</h3>
-      <div class="sr">
-        <div class="sr__i"><span class="sr__d">周一 · 周三 · 周五</span><b>英语</b></div>
-        <div class="sr__i sr__i--b"><span class="sr__d">周二 · 周四</span><b>语文</b></div>
-      </div>
-      <div class="sr__t">早读 6:30—7:00　·　早自修 7:00—7:25</div>
-    </div>
-  </div>
-
   <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
     <span class="kicker">彩色格子＝要上课，小圆点＝没课</span><span class="bar"></span></div>
   <div class="grid">
