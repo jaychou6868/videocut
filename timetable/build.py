@@ -170,7 +170,7 @@ def mascot_uri(key):
     return None
 
 
-def watermark_css(key, size, top=0, bottom=0):
+def watermark_css(key, size, top=0, bottom=0, opacity=.16):
     """表格中央的角色水印。top/bottom 让它避开表头（周几）和表尾那一行，
     在真正的空白区域居中，而不是在含表头的整块里居中。"""
     uri = mascot_uri(key)
@@ -180,7 +180,7 @@ def watermark_css(key, size, top=0, bottom=0):
             "\n.grid>*{position:relative;z-index:1}"
             f"\n.grid:before{{content:'';position:absolute;top:{top}px;bottom:{bottom}px;left:0;right:0;"
             "z-index:0;pointer-events:none;"
-            f"opacity:.11;background:url('{uri}') center center / {size} auto no-repeat}}")
+            f"opacity:{opacity};background:url('{uri}') center center / {size} auto no-repeat}}")
 
 
 def user_mascot(key):
