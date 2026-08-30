@@ -102,4 +102,22 @@ for key, path, tol, box, erode in JOBS:
     canvas.paste(out, ((side - out.width) // 2, (side - out.height) // 2), out)
     dst = os.path.join(ASSETS, f"mascot_{key}.png")
     canvas.save(dst)
+
+    # 水印专用版：颜色一点不改，只在轮廓外侧加一圈柔和灰边。
+    # 角色身上大片纯白（米菲最明显），白叠白等于隐形；靠外轮廓才显得出形状，
+    # 而压暗整张图会把白色弄脏，所以只动轮廓。
+    arr = np.array(canvas).astype(np.float32)
+    a = arr[:, :, 3] / 255.0
+    blur = np.array(canvas.split()[3].filter(
+        ImageFilter.GaussianBlur(5))).astype(np.float32) / 255.0
+    halo = np.clip(blur - a, 0, 1) * 0.85                    # 只留轮廓外那一圈
+    hc = np.full(arr[:, :, :3].shape, 70.0)                  # 描边颜色：中性灰
+
+    out_a = a + halo * (1 - a)
+    safe = np.where(out_a > 0, out_a, 1)
+    out_rgb = (arr[:, :, :3] * a[..., None] +
+               hc * (halo * (1 - a))[..., None]) / safe[..., None]
+    wm = np.dstack([out_rgb.clip(0, 255).astype(np.uint8),
+                    (out_a * 255).clip(0, 255).astype(np.uint8)])
+    Image.fromarray(wm, "RGBA").save(os.path.join(ASSETS, f"wm_{key}.png"))
     print(f"{key}: bg={tuple(bg)} -> {dst} {canvas.size} 主体占比 {fg.mean():.1%}")

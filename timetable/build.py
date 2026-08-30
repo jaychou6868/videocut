@@ -159,18 +159,21 @@ MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
         ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml"}
 
 def mascot_uri(key):
-    """角色图的 data URI，用于表格中央的背景水印"""
+    """角色图的 data URI，用于表格中央的背景水印。
+    优先用 prep_assets.py 生成的压暗版 wm_*，白色部分才不会隐形。"""
     if not os.path.isdir(ASSETS):
         return None
-    for fn in sorted(os.listdir(ASSETS)):
+    names = (f"wm_{key}", f"mascot_{key}")
+    for want in names:
+      for fn in sorted(os.listdir(ASSETS)):
         stem, ext = os.path.splitext(fn)
-        if stem.lower() == f"mascot_{key}" and ext.lower() in MIME:
+        if stem.lower() == want and ext.lower() in MIME:
             data = base64.b64encode(open(os.path.join(ASSETS, fn), "rb").read()).decode()
             return f"data:{MIME[ext.lower()]};base64,{data}"
     return None
 
 
-def watermark_css(key, size, top=0, bottom=0, opacity=.16):
+def watermark_css(key, size, top=0, bottom=0, left=0, opacity=.16):
     """表格中央的角色水印。top/bottom 让它避开表头（周几）和表尾那一行，
     在真正的空白区域居中，而不是在含表头的整块里居中。"""
     uri = mascot_uri(key)
@@ -178,7 +181,7 @@ def watermark_css(key, size, top=0, bottom=0, opacity=.16):
         return ""
     return ("\n.grid{position:relative}"
             "\n.grid>*{position:relative;z-index:1}"
-            f"\n.grid:before{{content:'';position:absolute;top:{top}px;bottom:{bottom}px;left:0;right:0;"
+            f"\n.grid:before{{content:'';position:absolute;top:{top}px;bottom:{bottom}px;left:{left}px;right:0;"
             "z-index:0;pointer-events:none;"
             f"opacity:{opacity};background:url('{uri}') center center / {size} auto no-repeat}}")
 
@@ -380,7 +383,7 @@ h2{font-size:30px}
 .note li,.note p{font-size:17px;line-height:1.7;font-weight:500}
 .note ul{margin-left:20px}
 .note b{color:var(--warn)}
-.notes{display:block;margin-top:18px}
+.notes{display:block;margin-top:20px}
 .note--sr{display:flex;align-items:center;gap:26px}
 .note--sr h3{margin:0;white-space:nowrap}
 .note--sr .sr{flex:1;margin:0}
@@ -426,12 +429,6 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 
   <div class="glance">%(glance)s</div>
 
-  <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
-    <span class="kicker">彩色格子＝要上课，小圆点＝没课</span><span class="bar"></span></div>
-  <div class="grid">
-      %(grid)s
-  </div>
-
   <div class="notes">
     <div class="note note--sr">
       <h3>📖 早自修（全校统一）</h3>
@@ -441,6 +438,12 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
       </div>
       <div class="sr__t">早读 6:30—7:00　·　早自修 7:00—7:25</div>
     </div>
+  </div>
+
+  <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
+    <span class="kicker">彩色格子＝要上课，小圆点＝没课</span><span class="bar"></span></div>
+  <div class="grid">
+      %(grid)s
   </div>
 
   <div class="sign">
@@ -458,7 +461,7 @@ def main():
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '780px', top=56),
+        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:

@@ -195,7 +195,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),
-            wm=watermark_css(key, '600px', top=44, bottom=38),
+            wm=watermark_css(key, '600px', top=44, bottom=38, left=250),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:
