@@ -9,8 +9,8 @@
 import os, json
 
 from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL,
-                   DAYS, NOTE_CELL, THEMES, item_at, day_items, day_span,
-                   busy_periods, user_mascot, watermark_css)
+                   DAYS, NOTE_CELL, THEMES, item_at, busy_periods,
+                   user_mascot, watermark_css)
 
 WIDE_FILES = {k: v["file"].replace(".png", "_横版.png") for k, v in THEMES.items()}
 
@@ -23,7 +23,7 @@ def build_head():
 
 
 def build_rows():
-    """按时间顺序铺满一天：上课节次占五列，作息横贯整行；末尾补当天跨度"""
+    """按时间顺序铺满一天：上课节次占五列，作息横贯整行"""
     BUSY = busy_periods()
     out = []
     for s in SCHEDULE:
@@ -53,11 +53,6 @@ def build_rows():
             else:
                 out.append(f'<div class="wc{last}"><span class="wdot"></span></div>')
 
-    out.append('<div class="wt wt--foot"><b>当天</b><i>上课跨度</i></div>')
-    for d in range(1, 6):
-        span, b2b = day_span(day_items(d))
-        tag = '<em class="wb2b">连堂</em>' if b2b else ""
-        out.append(f'<div class="wsp{" wsp--last" if d == 5 else ""}">{span}{tag}</div>')
     return "".join(out)
 
 
@@ -116,7 +111,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wt--foot i{font-size:13.5px;opacity:.6}
 
 /* 作息行：横贯五列 */
-.wband{grid-column:2 / -1;height:20px;display:flex;align-items:center;gap:9px;padding:0 16px;
+.wband{grid-column:2 / -1;height:22px;display:flex;align-items:center;gap:9px;padding:0 16px;
        background:color-mix(in srgb,var(--bg) 76%,transparent);
        border-bottom:2px solid var(--line)}
 .wb__n{font-size:14.5px;font-weight:700;color:var(--ink);opacity:.74;white-space:nowrap}
@@ -126,7 +121,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wband--tag{background:color-mix(in srgb,var(--soft) 82%,transparent)}
 
 /* 上课格子 */
-.wc{height:50px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
+.wc{height:52px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wc--last{border-right:none}
 .wdot{width:8px;height:8px;border-radius:50%;background:var(--line)}
@@ -195,7 +190,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),
-            wm=watermark_css(key, '560px', top=40, bottom=32, left=170),
+            wm=watermark_css(key, '560px', top=40, left=170),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:

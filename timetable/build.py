@@ -34,8 +34,7 @@ SCHEDULE = [
     dict(t="14:25—15:05",  name="第7节",       kind="class", p=7),
     dict(t="15:15—15:55",  name="第8节",       kind="class", p=8),
     dict(t="16:10—16:50",  name="第9节",       kind="class", p=9),
-    dict(t="16:50—17:05",  name="课外活动",    kind="rest",  icon="🏸", tag="剩余 15 分钟"),
-    dict(t="17:05",        name="晚餐",        kind="meal",  icon="🍜"),
+    dict(t="16:50",        name="晚餐",        kind="meal",  icon="🍜"),
     dict(t="17:40—18:00",  name="课前活动",    kind="rest",  icon="🚶"),
     dict(t="18:00—18:30",  name="听力",        kind="rest",  icon="🎧"),
     dict(t="18:30—19:20",  name="晚一",        kind="night", icon="🌙", p=10, label="晚一"),
@@ -140,6 +139,13 @@ def beaver_svg(c):
   <rect x="60.5" y="82" width="5.5" height="11" rx="2" fill="#fff" stroke="{c['ink']}" stroke-width="2"/>
 </svg>'''
 
+# 淡紫配色：Loopy / 酷洛米 / 米菲 共用一套，放桌面不刺眼
+LILAC = dict(
+    brand="#8B79C0", brand2="#B3A2DE", accent="#F5A9C6", ink="#3B3348",
+    bg="#F7F4FC", card="#FFFFFF", soft="#EFEAFA", line="#DFD6F1", dot="#E8E1F7",
+    muted="#8B8296", warn="#D06D9E", warn2="#E99BC1", warnbg="#FBEFF5",
+)
+
 THEMES = {
     "kitty": dict(
         file="政治课表_Kitty版.png",
@@ -156,26 +162,17 @@ THEMES = {
         mascot=puppy_svg, deco="☁️ 🐾 ⭐", hearts="🐾",
     ),
     "loopy": dict(
-        file="政治课表_Loopy版.png",
-        brand="#E8407A", brand2="#FF8FB4", accent="#FFC93C", ink="#3D2430",
-        bg="#FFF0F5", card="#FFFFFF", soft="#FFE3EE", line="#F8CFDF", dot="#FBDCE8",
-        muted="#9C8290", warn="#6C4BB6", warn2="#9C7BDE", warnbg="#F1ECFB",
-        mascot=beaver_svg, deco="🌸 💖 ⭐", hearts="🌸",
+        file="政治课表_Loopy版.png", **LILAC,
+        mascot=beaver_svg, deco="💜 🌸 ⭐", hearts="💜",
     ),
     # 酷洛米：淡紫为主，长时间放在桌面也不刺眼；值班用她身上的粉做区分色
     "kuromi": dict(
-        file="政治课表_酷洛米版.png",
-        brand="#8B79C0", brand2="#B3A2DE", accent="#F5A9C6", ink="#3B3348",
-        bg="#F7F4FC", card="#FFFFFF", soft="#EFEAFA", line="#DFD6F1", dot="#E8E1F7",
-        muted="#8B8296", warn="#D06D9E", warn2="#E99BC1", warnbg="#FBEFF5",
-        mascot=bunny_svg, deco="💜 ⭐ 🖤", hearts="💜",
+        file="政治课表_酷洛米版.png", **LILAC,
+        mascot=bunny_svg, deco="💜 🖤 ⭐", hearts="💜",
     ),
     "bunny": dict(
-        file="政治课表_米菲版.png",
-        brand="#E8532C", brand2="#FF8154", accent="#F5B700", ink="#25384D",
-        bg="#FFF6EE", card="#FFFFFF", soft="#FFE9DC", line="#F5D9C7", dot="#FBE3D2",
-        muted="#94806F", warn="#2C6FBB", warn2="#5D9BDD", warnbg="#E8F1FB",
-        mascot=bunny_svg, deco="🥕 🌼 ⭐", hearts="🌼",
+        file="政治课表_米菲版.png", **LILAC,
+        mascot=bunny_svg, deco="💜 🌼 ⭐", hearts="💜",
     ),
 }
 
@@ -289,8 +286,8 @@ def build_grid():
             if it:
                 chip = "pill" + (" pill--duty" if it["duty"] else "")
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
-                             f'<span class="pill__k">{it["main"]}<em>{it["unit"]}</em></span>'
-                             f'<span class="pill__u">{it["sub"]}</span></div></div>')
+                             f'<span class="pill__k">{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
+                             f'<span class="pill__u">{PERIOD_TIME[p]}</span></div></div>')
             elif note:
                 cells.append(f'<div class="c c--note{last}"><span>{note}</span></div>')
             else:
@@ -392,7 +389,8 @@ h2{font-size:30px}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
-.pill__u{font-size:13px;font-weight:700;opacity:.95;letter-spacing:1.5px;margin-top:1px}
+.pill__u{font-size:15px;font-weight:700;opacity:.95;letter-spacing:.2px;margin-top:2px;
+         font-family:'Fredoka','Noto Sans SC',sans-serif}
 .c--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
               border-radius:12px;padding:5px 10px}
