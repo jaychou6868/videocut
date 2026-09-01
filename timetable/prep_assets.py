@@ -17,6 +17,7 @@ JOBS = [
     ("kitty", f"{UP}/6808d15a-image.jpg", 40, (0.00, 0.00, 1.00, 0.93), 0),  # Hello Kitty（粉底）
     ("bunny", f"{UP}/c5d2e410-image.jpg", 60, None, 0),                 # 米菲（深蓝底）
     ("loopy", f"{UP}/ad0bb3f2-image.jpg", 38, None, 1),                # Loopy（白底全身）
+    ("kuromi", f"{UP}/3720488a-image.png", 34, None, 1),               # 酷洛米（白底）
 ]
 
 
@@ -72,24 +73,37 @@ def largest_blob(mask):
 
 
 for key, path, tol, box, erode in JOBS:
-    im = Image.open(path).convert("RGB")
+    src = Image.open(path)
+    # 源图自带透明通道时直接用它：既不必猜背景色，也能保住主体旁边的装饰元素
+    src_alpha = None
+    if src.mode in ("RGBA", "LA", "P"):
+        a = src.convert("RGBA").getchannel("A")
+        if a.getextrema()[0] < 250:
+            src_alpha = a
+    im = src.convert("RGB")
+    if src_alpha is not None:
+        im.putalpha(src_alpha)                  # 一并参与后面的裁剪缩放
     if box:
         w, h = im.size
         im = im.crop((int(box[0] * w), int(box[1] * h), int(box[2] * w), int(box[3] * h)))
     if max(im.size) > 900:                      # 降采样，加快连通域计算
         im.thumbnail((900, 900), Image.LANCZOS)
 
-    arr = np.array(im)
-    bgmask, bg = flood_bg(arr, tol)
-    fg = largest_blob(~bgmask)
-
-    alpha = (fg * 255).astype(np.uint8)
+    if src_alpha is not None:
+        rgba = np.array(im.convert("RGBA"))
+        arr, alpha = rgba[:, :, :3], rgba[:, :, 3]
+        fg, bg = alpha > 8, np.array([-1, -1, -1])
+    else:
+        arr = np.array(im.convert("RGB"))
+        bgmask, bg = flood_bg(arr, tol)
+        fg = largest_blob(~bgmask)
+        alpha = (fg * 255).astype(np.uint8)
     if erode:                                   # 收边，去掉主体轮廓上的背景色毛边
         am = Image.fromarray(alpha)
         for _ in range(erode):
             am = am.filter(ImageFilter.MinFilter(3))
         alpha = np.array(am)
-    out = Image.fromarray(np.dstack([arr, alpha]), "RGBA")
+    out = Image.fromarray(np.dstack([arr, alpha]).astype(np.uint8), "RGBA")
     # 边缘羽化一点点，去锯齿
     a = Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.7))
     out.putalpha(a)

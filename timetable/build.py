@@ -162,6 +162,14 @@ THEMES = {
         muted="#9C8290", warn="#6C4BB6", warn2="#9C7BDE", warnbg="#F1ECFB",
         mascot=beaver_svg, deco="🌸 💖 ⭐", hearts="🌸",
     ),
+    # 酷洛米：淡紫为主，长时间放在桌面也不刺眼；值班用她身上的粉做区分色
+    "kuromi": dict(
+        file="政治课表_酷洛米版.png",
+        brand="#8B79C0", brand2="#B3A2DE", accent="#F5A9C6", ink="#3B3348",
+        bg="#F7F4FC", card="#FFFFFF", soft="#EFEAFA", line="#DFD6F1", dot="#E8E1F7",
+        muted="#8B8296", warn="#D06D9E", warn2="#E99BC1", warnbg="#FBEFF5",
+        mascot=bunny_svg, deco="💜 ⭐ 🖤", hearts="💜",
+    ),
     "bunny": dict(
         file="政治课表_米菲版.png",
         brand="#E8532C", brand2="#FF8154", accent="#F5B700", ink="#25384D",

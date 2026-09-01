@@ -38,7 +38,7 @@ def build_rows():
             continue
 
         cls = "wt" + (" wt--mine" if p in BUSY else "")
-        out.append(f'<div class="{cls}"><b>{PERIOD_LABEL[p]}</b><i>{PERIOD_TIME[p]}</i></div>')
+        out.append(f'<div class="{cls}"><b>{PERIOD_LABEL[p]}</b></div>')
         for d in range(1, 6):
             it = item_at(d, p)
             note = NOTE_CELL.get((d, p))
@@ -46,8 +46,8 @@ def build_rows():
             if it:
                 pill = "wpill" + (" wpill--duty" if it["duty"] else "")
                 out.append(f'<div class="wc wc--on{last}"><div class="{pill}">'
-                           f'<span class="wpill__k">{it["main"]}<em>{it["unit"]}</em></span>'
-                           f'<span class="wpill__u">{it["sub"]}</span></div></div>')
+                           f'<span class="wpill__k">{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
+                           f'<span class="wpill__u">{PERIOD_TIME[p]}</span></div></div>')
             elif note:
                 out.append(f'<div class="wc wc--note{last}"><span>{note}</span></div>')
             else:
@@ -67,7 +67,7 @@ html,body{width:1920px;height:1080px;overflow:hidden}
 body{color:var(--ink);background-color:var(--bg);
      background-image:radial-gradient(var(--dot) 2px, transparent 2.1px);background-size:26px 26px;
      font-family:'Noto Sans SC','WenQuanYi Zen Hei',sans-serif;-webkit-font-smoothing:antialiased}
-.page{width:1920px;height:1080px;padding:18px 34px 14px;display:flex;flex-direction:column;gap:12px}
+.page{width:1920px;height:1080px;padding:14px 34px 12px;display:flex;flex-direction:column;gap:10px}
 h1,.wh span,.wt b{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weight:400}
 .wt i,.wpill__k,.wsp{font-family:'Fredoka','Noto Sans SC',sans-serif;font-variant-numeric:tabular-nums}
 
@@ -78,9 +78,9 @@ h1,.wh span,.wt b{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-weig
 .hero:before{content:"";position:absolute;right:-60px;top:-110px;width:280px;height:280px;z-index:0;
              border-radius:50%;background:linear-gradient(150deg,var(--soft),transparent 70%)}
 .hero>*{position:relative;z-index:1}
-.mascot{width:96px;height:96px;object-fit:contain;flex:none;
+.mascot{width:82px;height:82px;object-fit:contain;flex:none;
         filter:drop-shadow(0 4px 6px rgba(0,0,0,.14))}
-h1{font-size:33px;line-height:1.1}
+h1{font-size:30px;line-height:1.1}
 h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
          font-family:'Noto Sans SC',sans-serif}
 .stats{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end;max-width:700px}
@@ -91,7 +91,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
     font-size:13.5px;font-weight:700;color:var(--brand);white-space:nowrap}
 
 /* 主表：星期为列（横排）、节次与作息为行（竖排） */
-.grid{flex:none;display:grid;grid-template-columns:250px repeat(5,1fr);
+.grid{flex:none;display:grid;grid-template-columns:170px repeat(5,1fr);
       background:var(--card);border:4px solid var(--ink);border-radius:22px;overflow:hidden;
       box-shadow:0 7px 0 var(--line)}
 .wh{background:linear-gradient(150deg,var(--brand),var(--brand2));color:#fff;text-align:center;
@@ -100,10 +100,10 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wh--corner{background:var(--ink);font-size:15px;font-weight:700;letter-spacing:2px;
             display:flex;align-items:center;justify-content:center;
             font-family:'Noto Sans SC',sans-serif;border-right:none}
-.wt{display:flex;align-items:center;gap:8px;padding:0 14px;
+.wt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wt b{font-size:19px;line-height:1;white-space:nowrap}
-.wt i{margin-left:auto;font-style:normal;font-size:16px;font-weight:700;
+.wt i{font-style:normal;font-size:16px;font-weight:700;
       color:var(--ink);opacity:.78;white-space:nowrap}
 .wt--soft{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .wt--soft i{font-size:14.5px;opacity:.66}
@@ -116,7 +116,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wt--foot i{font-size:13.5px;opacity:.6}
 
 /* 作息行：横贯五列 */
-.wband{grid-column:2 / -1;height:24px;display:flex;align-items:center;gap:9px;padding:0 16px;
+.wband{grid-column:2 / -1;height:20px;display:flex;align-items:center;gap:9px;padding:0 16px;
        background:color-mix(in srgb,var(--bg) 76%,transparent);
        border-bottom:2px solid var(--line)}
 .wb__n{font-size:14.5px;font-weight:700;color:var(--ink);opacity:.74;white-space:nowrap}
@@ -126,23 +126,24 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wband--tag{background:color-mix(in srgb,var(--soft) 82%,transparent)}
 
 /* 上课格子 */
-.wc{height:38px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
+.wc{height:50px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wc--last{border-right:none}
 .wdot{width:8px;height:8px;border-radius:50%;background:var(--line)}
-.wpill{display:flex;align-items:center;justify-content:center;gap:7px;height:100%;
-       padding:0 18px;border-radius:11px;color:#fff;
+.wpill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+       height:100%;padding:0 14px;border-radius:12px;color:#fff;
        background:linear-gradient(150deg,var(--brand2),var(--brand));
        box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 9px rgba(0,0,0,.13)}
 .wpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
-.wpill__k{font-size:22px;font-weight:800;line-height:1}
+.wpill__k{font-size:21px;font-weight:800;line-height:1.05}
 .wpill__k em{font-size:13px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
-.wpill__u{font-size:12px;font-weight:700;opacity:.92;letter-spacing:1px}
+.wpill__u{font-size:13.5px;font-weight:700;opacity:.95;letter-spacing:.2px;
+          font-family:'Fredoka','Noto Sans SC',sans-serif}
 .wc--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
 .wc--note span{font-size:13px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
                border-radius:10px;padding:3px 9px}
-.wsp{height:32px;background:color-mix(in srgb,var(--bg) 76%,transparent);
+.wsp{height:30px;background:color-mix(in srgb,var(--bg) 76%,transparent);
      display:flex;align-items:center;justify-content:center;gap:7px;
      font-size:15px;font-weight:700;color:var(--ink);opacity:.85;
      border-right:2px solid var(--line)}
@@ -194,7 +195,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),
-            wm=watermark_css(key, '600px', top=44, bottom=38, left=250),
+            wm=watermark_css(key, '560px', top=40, bottom=32, left=170),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:
