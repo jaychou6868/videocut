@@ -55,7 +55,7 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
 .gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
             font-family:'Noto Sans SC',sans-serif}
-.gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
+.gl__i--duty{background:var(--warnbg);outline:2.5px solid var(--warn);outline-offset:-2px}
 
 /* ---------- 主表 ---------- */
 .sec__hd{display:flex;align-items:center;gap:12px;margin:26px 0 14px}
@@ -93,7 +93,7 @@ h2{font-size:30px}
       align-items:center;justify-content:center;gap:1px;color:#fff;
       background:linear-gradient(150deg,var(--brand2),var(--brand));
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
-.pill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.pill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
@@ -182,9 +182,9 @@ h2{font-size:30px}
 
       <div class="gl">
         <div class="gl__d">周四</div>
-        <div class="gl__n">2 节</div>
-        <div class="gl__i"><span class="gl__p">第8节</span><b>128<em>班</em></b><span class="gl__t">15:15—15:55</span></div><div class="gl__i"><span class="gl__p">第9节</span><b>129<em>班</em></b><span class="gl__t">16:10—16:50</span></div>
-        <div class="gl__sp">⏱ 15:15—16:50<em class="gl__b2b">连堂</em></div>
+        <div class="gl__n">3 节</div>
+        <div class="gl__i"><span class="gl__p">第8节</span><b>128<em>班</em></b><span class="gl__t">15:15—15:55</span></div><div class="gl__i"><span class="gl__p">第9节</span><b>129<em>班</em></b><span class="gl__t">16:10—16:50</span></div><div class="gl__i gl__i--duty"><span class="gl__p">晚一</span><b>值班<em>晚自修</em></b><span class="gl__t">18:30—19:20</span></div>
+        <div class="gl__sp">⏱ 15:15—19:20<em class="gl__b2b">连堂</em></div>
       </div>
 
       <div class="gl">
@@ -283,8 +283,12 @@ h2{font-size:30px}
       <div class="bd bd--rest"><span class="bd__n">🚶 课前活动</span></div>
       <div class="tc tc--soft"><i>18:00—18:30</i></div>
       <div class="bd bd--rest"><span class="bd__n">🎧 听力</span></div>
-      <div class="tc tc--soft"><i>18:30—19:20</i></div>
-      <div class="bd bd--night"><span class="bd__n">🌙 晚一</span></div>
+      <div class="tc tc--mine"><b>晚一</b><i>18:30—19:20</i></div>
+      <div class="c"><span class="c__dot"></span></div>
+      <div class="c"><span class="c__dot"></span></div>
+      <div class="c"><span class="c__dot"></span></div>
+      <div class="c c--on"><div class="pill pill--duty"><span class="pill__k">值班<em></em></span><span class="pill__u">晚自修</span></div></div>
+      <div class="c c--last"><span class="c__dot"></span></div>
       <div class="tc tc--soft"><i>19:30—20:20</i></div>
       <div class="bd bd--night"><span class="bd__n">🌙 晚二</span></div>
       <div class="tc tc--soft"><i>20:30—21:30</i></div>

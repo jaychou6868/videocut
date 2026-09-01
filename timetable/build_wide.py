@@ -8,9 +8,9 @@
 """
 import os, json
 
-from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, MY, DAYS,
-                   NOTE_CELL, THEMES, WARN_P, lesson_at, day_lessons, day_span,
-                   user_mascot, watermark_css)
+from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL,
+                   DAYS, NOTE_CELL, THEMES, item_at, day_items, day_span,
+                   busy_periods, user_mascot, watermark_css)
 
 WIDE_FILES = {k: v["file"].replace(".png", "_横版.png") for k, v in THEMES.items()}
 
@@ -24,6 +24,7 @@ def build_head():
 
 def build_rows():
     """按时间顺序铺满一天：上课节次占五列，作息横贯整行；末尾补当天跨度"""
+    BUSY = busy_periods()
     out = []
     for s in SCHEDULE:
         p = s.get("p")
@@ -36,19 +37,17 @@ def build_rows():
                        f'<span class="wb__n">{s.get("icon","")} {s["name"]}</span>{sub}{tag}</div>')
             continue
 
-        warn = p in WARN_P
-        mine = any(m[1] == p for m in MY)
-        cls = "wt" + (" wt--warn" if warn else (" wt--mine" if mine else ""))
-        out.append(f'<div class="{cls}"><b>第{p}节</b><i>{PERIOD_TIME[p]}</i></div>')
+        cls = "wt" + (" wt--mine" if p in BUSY else "")
+        out.append(f'<div class="{cls}"><b>{PERIOD_LABEL[p]}</b><i>{PERIOD_TIME[p]}</i></div>')
         for d in range(1, 6):
-            k = lesson_at(d, p)
+            it = item_at(d, p)
             note = NOTE_CELL.get((d, p))
             last = " wc--last" if d == 5 else ""
-            if k:
-                pill = "wpill" + (" wpill--nine" if warn else "")
+            if it:
+                pill = "wpill" + (" wpill--duty" if it["duty"] else "")
                 out.append(f'<div class="wc wc--on{last}"><div class="{pill}">'
-                           f'<span class="wpill__k">{k}<em>班</em></span>'
-                           f'<span class="wpill__u">政治</span></div></div>')
+                           f'<span class="wpill__k">{it["main"]}<em>{it["unit"]}</em></span>'
+                           f'<span class="wpill__u">{it["sub"]}</span></div></div>')
             elif note:
                 out.append(f'<div class="wc wc--note{last}"><span>{note}</span></div>')
             else:
@@ -56,7 +55,7 @@ def build_rows():
 
     out.append('<div class="wt wt--foot"><b>当天</b><i>上课跨度</i></div>')
     for d in range(1, 6):
-        span, b2b = day_span(day_lessons(d))
+        span, b2b = day_span(day_items(d))
         tag = '<em class="wb2b">连堂</em>' if b2b else ""
         out.append(f'<div class="wsp{" wsp--last" if d == 5 else ""}">{span}{tag}</div>')
     return "".join(out)
@@ -127,7 +126,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wband--tag{background:color-mix(in srgb,var(--soft) 82%,transparent)}
 
 /* 上课格子 */
-.wc{height:40px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
+.wc{height:38px;display:flex;align-items:center;justify-content:center;padding:4px 8px;
     border-bottom:2px solid var(--line);border-right:2px solid var(--line)}
 .wc--last{border-right:none}
 .wdot{width:8px;height:8px;border-radius:50%;background:var(--line)}
@@ -135,7 +134,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
        padding:0 18px;border-radius:11px;color:#fff;
        background:linear-gradient(150deg,var(--brand2),var(--brand));
        box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 9px rgba(0,0,0,.13)}
-.wpill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.wpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 .wpill__k{font-size:22px;font-weight:800;line-height:1}
 .wpill__k em{font-size:13px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}

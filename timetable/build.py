@@ -38,13 +38,14 @@ SCHEDULE = [
     dict(t="17:05",        name="晚餐",        kind="meal",  icon="🍜"),
     dict(t="17:40—18:00",  name="课前活动",    kind="rest",  icon="🚶"),
     dict(t="18:00—18:30",  name="听力",        kind="rest",  icon="🎧"),
-    dict(t="18:30—19:20",  name="晚一",        kind="night", icon="🌙"),
+    dict(t="18:30—19:20",  name="晚一",        kind="night", icon="🌙", p=10, label="晚一"),
     dict(t="19:30—20:20",  name="晚二",        kind="night", icon="🌙"),
     dict(t="20:30—21:30",  name="晚三",        kind="night", icon="🌙"),
     dict(t="22:10",        name="就寝熄灯",    kind="night", icon="🛏️"),
 ]
 
 PERIOD_TIME = {s["p"]: s["t"] for s in SCHEDULE if s.get("p")}
+PERIOD_LABEL = {s["p"]: s.get("label", f'第{s["p"]}节') for s in SCHEDULE if s.get("p")}
 
 # 我的政治课：(星期, 节次, 班级)
 MY = [
@@ -54,6 +55,9 @@ MY = [
     (4, 8, "128"), (4, 9, "129"),
     (5, 2, "125"), (5, 3, "128"),
 ]
+# 固定值班：(星期, 节次) -> (主标, 副标)。跟上课一样排进表里，不单列
+DUTY = {(4, 10): ("值班", "晚自修")}
+
 DAYS = ["周一", "周二", "周三", "周四", "周五"]      # 周六周日无政治课，不入表
 WARN_P = {s["p"] for s in SCHEDULE if s.get("warn") and s.get("p")}   # 待确认的节次
 NOTE_CELL = {(1, 6): "全校会议"}                     # 非政治课，但影响作息的提示
@@ -64,8 +68,23 @@ def lesson_at(d, p):
             return k
     return None
 
-def day_lessons(d):
-    return sorted([m for m in MY if m[0] == d], key=lambda m: m[1])
+def item_at(d, p):
+    """这一格要做什么：上课 -> 班级，值班 -> 值班。都算「要到场」"""
+    k = lesson_at(d, p)
+    if k:
+        return dict(main=k, unit="班", sub="政治", duty=False)
+    if (d, p) in DUTY:
+        main, sub = DUTY[(d, p)]
+        return dict(main=main, unit="", sub=sub, duty=True)
+    return None
+
+def day_items(d):
+    """当天所有要到场的安排（上课 + 值班），按节次先后排序"""
+    return [(p, item_at(d, p)) for p in sorted(PERIOD_TIME) if item_at(d, p)]
+
+def busy_periods():
+    """任意一天有安排的节次，用于左侧时间栏高亮"""
+    return {p for d in range(1, 6) for p, _ in day_items(d)}
 
 # ---------------- 手绘形象（无自备素材时的兜底） ----------------
 def kitty_svg(c):
@@ -202,25 +221,26 @@ def _mins(t):
     h, m = t.split(":")
     return int(h) * 60 + int(m)
 
-def day_span(ls):
-    """当天从第一节开始到最后一节结束的跨度，以及是否连堂（间隔≤15分钟）"""
-    first = PERIOD_TIME[ls[0][1]].split("—")[0]
-    last = PERIOD_TIME[ls[-1][1]].split("—")[-1]
-    back2back = any(_mins(PERIOD_TIME[b[1]].split("—")[0]) -
-                    _mins(PERIOD_TIME[a[1]].split("—")[-1]) <= 15
-                    for a, b in zip(ls, ls[1:]))
+def day_span(items):
+    """当天从第一项开始到最后一项结束的跨度，以及是否连堂（间隔≤15分钟）"""
+    ps = [p for p, _ in items]
+    first = PERIOD_TIME[ps[0]].split("—")[0]
+    last = PERIOD_TIME[ps[-1]].split("—")[-1]
+    back2back = any(_mins(PERIOD_TIME[b].split("—")[0]) -
+                    _mins(PERIOD_TIME[a].split("—")[-1]) <= 15
+                    for a, b in zip(ps, ps[1:]))
     return f"{first}—{last}", back2back
 
 def build_glance():
     out = []
     for d in range(1, 6):
-        ls = day_lessons(d)
+        ls = day_items(d)
         items = "".join(
-            f'<div class="gl__i{" gl__i--nine" if p in WARN_P else ""}">'
-            f'<span class="gl__p">第{p}节</span>'
-            f'<b>{k}<em>班</em></b>'
+            f'<div class="gl__i{" gl__i--duty" if it["duty"] else ""}">'
+            f'<span class="gl__p">{PERIOD_LABEL[p]}</span>'
+            f'<b>{it["main"]}<em>{it["unit"] or it["sub"]}</em></b>'
             f'<span class="gl__t">{PERIOD_TIME[p]}</span></div>'
-            for (_, p, k) in ls)
+            for p, it in ls)
         span, b2b = day_span(ls)
         tag = '<em class="gl__b2b">连堂</em>' if b2b else ""
         out.append(f'''
@@ -233,6 +253,7 @@ def build_glance():
     return "\n".join(out)
 
 def build_grid():
+    BUSY = busy_periods()
     cells = ['<div class="hd hd--t">时间</div>']
     cells += [f'<div class="hd"><span>{d}</span></div>' for d in DAYS]
 
@@ -246,22 +267,22 @@ def build_grid():
                          f'<span class="bd__n">{s.get("icon","")} {s["name"]}</span>{sub}{tag}</div>')
             continue
 
-        mine = any(m[1] == p for m in MY)
+        mine = p in BUSY
         warn = s.get("warn")
         tcls = "tc" + (" tc--mine" if mine else "") + (" tc--warn" if warn else "")
         badge = ""
         sub = f'<em>{s["sub"]}</em>' if s.get("sub") else ""
-        cells.append(f'<div class="{tcls}"><b>{s["name"]}</b>{badge}<i>{s["t"]}</i>{sub}</div>')
+        cells.append(f'<div class="{tcls}"><b>{PERIOD_LABEL[p]}</b>{badge}<i>{s["t"]}</i>{sub}</div>')
 
         for d in range(1, 6):
-            k = lesson_at(d, p)
+            it = item_at(d, p)
             note = NOTE_CELL.get((d, p))
             last = " c--last" if d == 5 else ""
-            if k:
-                chip = "pill" + (" pill--nine" if p in WARN_P else "")
+            if it:
+                chip = "pill" + (" pill--duty" if it["duty"] else "")
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
-                             f'<span class="pill__k">{k}<em>班</em></span>'
-                             f'<span class="pill__u">政治</span></div></div>')
+                             f'<span class="pill__k">{it["main"]}<em>{it["unit"]}</em></span>'
+                             f'<span class="pill__u">{it["sub"]}</span></div></div>')
             elif note:
                 cells.append(f'<div class="c c--note{last}"><span>{note}</span></div>')
             else:
@@ -321,7 +342,7 @@ h1 small{display:block;font-size:18px;color:var(--muted);margin-top:8px;letter-s
 .gl__i b{display:block;font-size:26px;font-family:'Fredoka',sans-serif;line-height:1.05;color:var(--ink)}
 .gl__i b em{font-size:14px;font-style:normal;font-weight:700;margin-left:1px;
             font-family:'Noto Sans SC',sans-serif}
-.gl__i--nine{background:var(--warnbg);outline:2.5px dashed var(--warn);outline-offset:-2px}
+.gl__i--duty{background:var(--warnbg);outline:2.5px solid var(--warn);outline-offset:-2px}
 
 /* ---------- 主表 ---------- */
 .sec__hd{display:flex;align-items:center;gap:12px;margin:26px 0 14px}
@@ -359,7 +380,7 @@ h2{font-size:30px}
       align-items:center;justify-content:center;gap:1px;color:#fff;
       background:linear-gradient(150deg,var(--brand2),var(--brand));
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
-.pill--nine{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.pill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
