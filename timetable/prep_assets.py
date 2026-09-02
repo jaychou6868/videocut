@@ -134,4 +134,13 @@ for key, path, tol, box, erode in JOBS:
     wm = np.dstack([out_rgb.clip(0, 255).astype(np.uint8),
                     (out_a * 255).clip(0, 255).astype(np.uint8)])
     Image.fromarray(wm, "RGBA").save(os.path.join(ASSETS, f"wm_{key}.png"))
+
+    # 牌子上那个小图标：紧贴主体裁掉四周空白，20px 见方时角色才占满、认得出
+    icon = canvas.crop(canvas.getbbox())
+    k2 = 256 / max(icon.size)
+    icon = icon.resize((max(1, round(icon.width * k2)), max(1, round(icon.height * k2))),
+                       Image.LANCZOS)
+    pad = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
+    pad.paste(icon, ((256 - icon.width) // 2, (256 - icon.height) // 2), icon)
+    pad.save(os.path.join(ASSETS, f"icon_{key}.png"))
     print(f"{key}: bg={tuple(bg)} -> {dst} {canvas.size} 主体占比 {fg.mean():.1%}")

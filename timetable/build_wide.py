@@ -118,7 +118,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
        background:color-mix(in srgb,var(--bg) 76%,transparent);
        border-bottom:2px solid var(--line)}
 .wb__n{font-size:14.5px;font-weight:700;color:var(--ink);opacity:.74;white-space:nowrap}
-.wb__s{font-size:13px;color:var(--muted);opacity:.9}
+.wb__s{font-size:14.5px;color:var(--muted);opacity:.9}
 .wb__g{font-size:12px;font-weight:800;color:#fff;background:var(--brand);border-radius:99px;
        padding:1px 8px;white-space:nowrap}
 .wband--tag{background:color-mix(in srgb,var(--soft) 82%,transparent)}
@@ -129,27 +129,28 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 .wc--last{border-right:none}
 .wdot{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .wpill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-       height:100%;padding:0 14px;border-radius:12px;color:#fff;
-       background:linear-gradient(150deg,var(--brand2),var(--brand));
+       height:100%;padding:0 12px;border-radius:12px;color:#fff;
+       background:linear-gradient(150deg,var(--brand),var(--brandd));
        box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 9px rgba(0,0,0,.13)}
 .wpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 /* 邱老师的课：空心虚线牌子 + 深色字，靠形状区分，不只靠颜色 */
-.wpill--qiu{background:color-mix(in srgb,var(--qiu) 10%,#fff);color:var(--qiu);
-            border:2.5px dashed var(--qiu);box-shadow:none}
+.wpill--qiu{background:color-mix(in srgb,var(--qiu) 7%,#fff);color:var(--qiu);
+            border:2.5px dashed color-mix(in srgb,var(--qiu) 45%,#fff);box-shadow:none}
 .wpill--qiu .wpill__u{opacity:.8}
-.wpill__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:6px;
+.wpill__pre{display:inline-block;background:color-mix(in srgb,var(--qiu) 78%,#fff);
+            color:#fff;border-radius:6px;
             font-size:14px;font-weight:800;padding:0 6px;margin-right:4px;vertical-align:1px;
             font-family:'Noto Sans SC',sans-serif}
-.wpill__k{font-size:21px;font-weight:800;line-height:1.05;
+.wpill__k{font-size:22px;font-weight:800;line-height:1.05;
           display:flex;align-items:center;justify-content:center;gap:4px}
-.wpill .ico{width:20px;height:20px}
+.wpill .ico{width:24px;height:24px}
 .wpill__k em{font-size:13px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
-.wpill__u{font-size:13.5px;font-weight:700;opacity:.95;letter-spacing:.2px;
+.wpill__u{font-size:15px;font-weight:700;opacity:.95;letter-spacing:.2px;
           font-family:'Fredoka','Noto Sans SC',sans-serif}
 .wc--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
-.wc--note span{font-size:13px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
-               border-radius:10px;padding:3px 9px}
+.wc--note span{font-size:13.5px;color:var(--ink);font-weight:700;opacity:.8;
+               background:var(--soft);border-radius:10px;padding:5px 12px}
 .wsp{height:30px;background:color-mix(in srgb,var(--bg) 76%,transparent);
      display:flex;align-items:center;justify-content:center;gap:7px;
      font-size:15px;font-weight:700;color:var(--ink);opacity:.85;
@@ -169,7 +170,8 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;
+--brandd:%(brandd)s;}
 %(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
@@ -199,7 +201,7 @@ def main():
             css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
             bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
             muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
-            qiu=c["qiu"], qiu2=c["qiu2"],
+            qiu=c["qiu"], qiu2=c["qiu2"], brandd=c["brandd"],
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),

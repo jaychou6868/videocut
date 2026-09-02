@@ -7,7 +7,7 @@ themes = json.load(open(os.path.join(OUT, "themes_wide.json"), encoding="utf-8")
 async def main():
     async with async_playwright() as pw:
         b = await pw.chromium.launch(executable_path="/opt/pw-browsers/chromium")
-        pg = await b.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=2)
+        pg = await b.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=3)
         for key, fname in themes.items():
             await pg.goto("file://" + os.path.join(OUT, f"tt_wide_{key}.html"))
             await pg.wait_for_timeout(700)

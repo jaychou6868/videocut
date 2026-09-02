@@ -8,7 +8,7 @@ import os, json, base64
 OUT = os.path.dirname(os.path.abspath(__file__))
 
 TITLE = "玥y的政治课表"
-SUBTITLE = "2026 学年第一学期 · 民族团结班 · 任教 125 / 128 / 129 班"
+SUBTITLE = "2026 学年第一学期 · 任教 125 / 128 / 129 班　·　虚线框＝邱老师的课"
 SIGN = "凯凯"
 
 # ---------------- 数据 ----------------
@@ -153,7 +153,7 @@ def beaver_svg(c):
 # 淡紫配色：Loopy / 酷洛米 / 米菲 共用一套，放桌面不刺眼
 LILAC = dict(
     brand="#8B79C0", brand2="#B3A2DE", accent="#F5A9C6", ink="#3B3348",
-    qiu="#5A4A8C", qiu2="#8477BE",
+    qiu="#5A4A8C", qiu2="#8477BE", brandd="#6B57A6",
     bg="#F7F4FC", card="#FFFFFF", soft="#EFEAFA", line="#DFD6F1", dot="#E8E1F7",
     muted="#8B8296", warn="#D06D9E", warn2="#E99BC1", warnbg="#FBEFF5",
 )
@@ -164,7 +164,7 @@ THEMES = {
         brand="#E8455F", brand2="#FF7C9B", accent="#FFC93C", ink="#3A2B33",
         bg="#FFF3F6", card="#FFFFFF", soft="#FFE8EF", line="#F6D3DE", dot="#FADCE5",
         muted="#9A8791", warn="#F0862F", warn2="#FFA85C", warnbg="#FFF1E3",
-        qiu="#9E2E48", qiu2="#D2647F",
+        qiu="#9E2E48", qiu2="#D2647F", brandd="#C22A45",
         mascot=kitty_svg, deco="🎀 💗 🍓", hearts="🎀",
     ),
     "puppy": dict(
@@ -172,7 +172,7 @@ THEMES = {
         brand="#2E86DE", brand2="#63AEEF", accent="#FFD23F", ink="#25384D",
         bg="#EFF7FF", card="#FFFFFF", soft="#E1F0FF", line="#CCE4F8", dot="#D8EAFB",
         muted="#7E93A8", warn="#EF7C3C", warn2="#FFA36B", warnbg="#FFF0E6",
-        qiu="#1B4F87", qiu2="#5A87C4",
+        qiu="#1B4F87", qiu2="#5A87C4", brandd="#1E63B4",
         mascot=puppy_svg, deco="☁️ 🐾 ⭐", hearts="🐾",
     ),
     "loopy": dict(
@@ -201,7 +201,8 @@ def mascot_uri(key, plain=False):
     优先用 prep_assets.py 生成的压暗版 wm_*，白色部分才不会隐形。"""
     if not os.path.isdir(ASSETS):
         return None
-    names = (f"mascot_{key}",) if plain else (f"wm_{key}", f"mascot_{key}")
+    names = ((f"icon_{key}", f"mascot_{key}") if plain == "icon" else
+             (f"mascot_{key}",) if plain else (f"wm_{key}", f"mascot_{key}"))
     for want in names:
       for fn in sorted(os.listdir(ASSETS)):
         stem, ext = os.path.splitext(fn)
@@ -213,7 +214,7 @@ def mascot_uri(key, plain=False):
 
 def icon_css(key):
     """自己的课前面那个小角色图标（邱老师的课用「邱」标签，两边不会混）"""
-    uri = mascot_uri(key, plain=True)
+    uri = mascot_uri(key, plain="icon")
     if not uri:
         return ""
     return ("\n.ico{display:inline-block;flex:none;vertical-align:-2px;"
@@ -269,14 +270,14 @@ def build_glance():
             f'<b>{it["main"]}<em>{it["unit"] or it["sub"]}</em></b>'
             f'<span class="gl__t">{PERIOD_TIME[p]}</span></div>'
             for p, it in ls)
-        span, b2b = day_span(ls)
-        tag = '<em class="gl__b2b">连堂</em>' if b2b else ""
+        n_class = sum(1 for _, it in ls if not it["duty"])
+        n_duty = len(ls) - n_class
+        cnt = f"{n_class} 节" + ("　+ 值班" if n_duty else "")
         out.append(f'''
       <div class="gl">
         <div class="gl__d">{DAYS[d-1]}</div>
-        <div class="gl__n">{len(ls)} 节</div>
+        <div class="gl__n">{cnt}</div>
         {items}
-        <div class="gl__sp">⏱ {span}{tag}</div>
       </div>''')
     return "\n".join(out)
 
@@ -409,14 +410,15 @@ h2{font-size:30px}
 .c__dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
 .pill{width:100%;height:100%;border-radius:17px;display:flex;flex-direction:column;
       align-items:center;justify-content:center;gap:1px;color:#fff;
-      background:linear-gradient(150deg,var(--brand2),var(--brand));
+      background:linear-gradient(150deg,var(--brand),var(--brandd));
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
 .pill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 /* 邱老师的课：空心虚线牌子 + 深色字，和自己的实心牌子在「形状」上就分开 */
-.pill--qiu{background:color-mix(in srgb,var(--qiu) 10%,#fff);color:var(--qiu);
-           border:3px dashed var(--qiu);box-shadow:none}
+.pill--qiu{background:color-mix(in srgb,var(--qiu) 7%,#fff);color:var(--qiu);
+           border:3px dashed color-mix(in srgb,var(--qiu) 45%,#fff);box-shadow:none}
 .pill--qiu .pill__u{opacity:.8}
-.pill__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:7px;
+.pill__pre{display:inline-block;background:color-mix(in srgb,var(--qiu) 78%,#fff);
+           color:#fff;border-radius:7px;
            font-size:17px;font-weight:800;padding:1px 7px;margin-right:5px;vertical-align:2px;
            font-family:'Noto Sans SC',sans-serif}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px;
@@ -427,8 +429,8 @@ h2{font-size:30px}
 .pill__u{font-size:15px;font-weight:700;opacity:.95;letter-spacing:.2px;margin-top:2px;
          font-family:'Fredoka','Noto Sans SC',sans-serif}
 .c--note{background:color-mix(in srgb,var(--bg) 76%,transparent)}
-.c--note span{font-size:14.5px;color:var(--muted);font-weight:700;border:2px dashed var(--line);
-              border-radius:12px;padding:5px 10px}
+.c--note span{font-size:14.5px;color:var(--ink);font-weight:700;opacity:.8;
+              background:var(--soft);border-radius:12px;padding:6px 12px}
 .bd{grid-column:2 / -1;border-bottom:2px solid var(--line);background:color-mix(in srgb,var(--bg) 76%,transparent);
     display:flex;align-items:center;gap:10px;padding:9px 18px;min-height:50px}
 .bd__n{font-size:20px;font-weight:700;color:var(--ink);opacity:.72}
@@ -472,7 +474,8 @@ h2{font-size:30px}
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;
+--brandd:%(brandd)s;}
 %(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
@@ -485,14 +488,13 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
         <span class="stat">最早 <b>7:40</b> 上课</span>
       </div>
     </div>
-    <div class="deco">%(deco)s</div>
     <div class="by">%(sign)s 制</div>
   </div>
 
   <div class="glance">%(glance)s</div>
 
-  <div class="sec__hd"><h2>⏰ 作息 × 政治课</h2>
-    <span class="kicker">彩色格子＝要上课，小圆点＝没课</span><span class="bar"></span></div>
+  <div class="sec__hd"><h2>作息 × 政治课</h2>
+    <span class="kicker">实心＝我的课　虚线＝邱老师　小圆点＝没课</span><span class="bar"></span></div>
   <div class="grid">
       %(grid)s
   </div>
@@ -510,7 +512,7 @@ def main():
         css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
         bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
-        qiu=c["qiu"], qiu2=c["qiu2"],
+        qiu=c["qiu"], qiu2=c["qiu2"], brandd=c["brandd"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
         glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236) + icon_css(key),

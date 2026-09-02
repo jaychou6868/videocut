@@ -70,14 +70,16 @@ body{color:var(--ink);background-color:var(--bg);
       display:flex;flex-direction:column;gap:10px;position:relative}
 
 /* 时钟正下方那片空白放不透明的角色本体；表格里另有半透明水印 */
-.page .topm{position:absolute;left:0;right:0;top:%(WMTOP)spx;height:250px;z-index:1;
+.page .topm{position:absolute;left:0;right:0;top:%(WMTOP)spx;height:330px;z-index:1;
       pointer-events:none;
-      background:url('%(TOPM)s') center center / 232px auto no-repeat;
+      background:url('%(TOPM)s') center center / 320px auto no-repeat;
       filter:drop-shadow(0 6px 10px rgba(0,0,0,.14))}
 .page>*{position:relative;z-index:1}
 
 .hd{display:flex;align-items:center;gap:10px;flex:none;padding:0 4px}
-.hd__t{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-size:27px;line-height:1}
+.hd__t{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-size:27px;line-height:1.15}
+.hd__s{display:block;font-size:15px;font-weight:600;color:var(--muted);margin-top:2px;
+       font-family:'Noto Sans SC',sans-serif}
 .hd__by{margin-left:auto;background:var(--soft);border:2px solid var(--brand);border-radius:999px;
         padding:3px 12px;font-size:14px;font-weight:700;color:var(--brand);white-space:nowrap}
 
@@ -117,14 +119,15 @@ body{color:var(--ink);background-color:var(--bg);
 .ldot{width:9px;height:9px;border-radius:50%%;background:var(--line)}
 .lpill{width:100%%;height:100%%;border-radius:15px;color:#fff;
        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-       background:linear-gradient(150deg,var(--brand2),var(--brand));
+       background:linear-gradient(150deg,var(--brand),var(--brandd));
        box-shadow:0 3px 0 rgba(0,0,0,.13)}
 .lpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
 /* 邱老师的课：空心虚线牌子 + 深色字，靠形状区分，不只靠颜色 */
-.lpill--qiu{background:color-mix(in srgb,var(--qiu) 10%%,#fff);color:var(--qiu);
-            border:3px dashed var(--qiu);box-shadow:none}
+.lpill--qiu{background:color-mix(in srgb,var(--qiu) 7%%,#fff);color:var(--qiu);
+            border:3px dashed color-mix(in srgb,var(--qiu) 45%%,#fff);box-shadow:none}
 .lpill--qiu .lp__t{opacity:.8}
-.lp__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:7px;
+.lp__pre{display:inline-block;background:color-mix(in srgb,var(--qiu) 78%%,#fff);
+         color:#fff;border-radius:7px;
          font-size:17px;font-weight:800;padding:1px 7px;margin-right:5px;vertical-align:2px;
          font-family:'Noto Sans SC',sans-serif}
 .lp__k{font-size:27px;font-weight:800;line-height:1;
@@ -136,18 +139,18 @@ body{color:var(--ink);background-color:var(--bg);
 .lp__t{font-size:16px;font-weight:700;opacity:.97;
        font-family:'Fredoka','Noto Sans SC',sans-serif}
 .lc--note{background:color-mix(in srgb,var(--bg) 76%%,transparent)}
-.lc--note span{font-size:15px;color:var(--muted);font-weight:700;
-               border:2px dashed var(--line);border-radius:11px;padding:4px 9px}
+.lc--note span{font-size:15px;color:var(--ink);font-weight:700;opacity:.8;
+               background:var(--soft);border-radius:11px;padding:5px 12px}
 """
 
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--ink:%(ink)s;--bg:%(bg)s;--card:%(card)s;
 --soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;--brandd:%(brandd)s;}
 %(css)s</style></head><body><div class="page">
   <div class="topm"></div>
   <div class="hd">
-    <span class="hd__t">%(title)s</span>
+    <span class="hd__t">%(title)s<span class="hd__s">任教 125 / 128 / 129　·　虚线框＝邱老师</span></span>
     <span class="hd__by">%(sign)s 制</span>
   </div>
   <div class="grid">%(table)s</div>
@@ -158,12 +161,13 @@ def main():
     for key, c in THEMES.items():
         html = PAGE % dict(
             css=CSS % dict(W=W, H=H, CLOCK=CLOCK_ZONE, BTN=BUTTON_ZONE,
-                           TOPM=mascot_uri(key, plain=True) or "", WMTOP=CLOCK_ZONE - 262)
+                           TOPM=mascot_uri(key, plain=True) or "", WMTOP=CLOCK_ZONE - 375)
                 + watermark_css(key, '420px', top=42, left=150, opacity=.16)
                 + icon_css(key),
             brand=c["brand"], brand2=c["brand2"], ink=c["ink"], bg=c["bg"], card=c["card"],
             soft=c["soft"], line=c["line"], dot=c["dot"], muted=c["muted"],
             warn=c["warn"], warn2=c["warn2"], qiu=c["qiu"], qiu2=c["qiu2"],
+            brandd=c["brandd"],
             title=TITLE, sign=SIGN, table=build_table(),
         )
         path = os.path.join(OUT, f"tt_lock_{key}.html")
