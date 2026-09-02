@@ -44,9 +44,11 @@ def build_rows():
             note = NOTE_CELL.get((d, p))
             last = " wc--last" if d == 5 else ""
             if it:
-                pill = "wpill" + (" wpill--duty" if it["duty"] else "")
+                pill = "wpill" + (" wpill--duty" if it["duty"] else
+                                  " wpill--qiu" if it.get("qiu") else "")
+                pre = f'<span class="wpill__pre">{it["pre"]}</span>' if it.get("pre") else ""
                 out.append(f'<div class="wc wc--on{last}"><div class="{pill}">'
-                           f'<span class="wpill__k">{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
+                           f'<span class="wpill__k">{pre}{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
                            f'<span class="wpill__u">{PERIOD_TIME[p]}</span></div></div>')
             elif note:
                 out.append(f'<div class="wc wc--note{last}"><span>{note}</span></div>')
@@ -130,6 +132,9 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
        background:linear-gradient(150deg,var(--brand2),var(--brand));
        box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 9px rgba(0,0,0,.13)}
 .wpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.wpill--qiu{background:linear-gradient(150deg,var(--qiu2),var(--qiu))}
+.wpill__pre{font-size:13px;font-weight:700;margin-right:3px;opacity:.9;
+            font-family:'Noto Sans SC',sans-serif}
 .wpill__k{font-size:21px;font-weight:800;line-height:1.05}
 .wpill__k em{font-size:13px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
@@ -157,7 +162,7 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
 %(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
@@ -187,6 +192,7 @@ def main():
             css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
             bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
             muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
+            qiu=c["qiu"], qiu2=c["qiu2"],
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),

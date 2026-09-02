@@ -54,6 +54,13 @@ MY = [
     (4, 8, "128"), (4, 9, "129"),
     (5, 2, "125"), (5, 3, "128"),
 ]
+# 邱老师的政治课：(星期, 节次, 班级)。不是我的课，用更深的紫色区分
+QIU = [
+    (1, 3, "130"), (1, 4, "126"),
+    (2, 2, "126"), (2, 3, "127"),
+    (3, 4, "126"),
+    (4, 6, "127"), (4, 7, "130"),
+]
 # 固定值班：(星期, 节次) -> (主标, 副标)。跟上课一样排进表里，不单列
 DUTY = {(4, 10): ("晚自修", "值班")}
 
@@ -75,11 +82,15 @@ def item_at(d, p):
     if (d, p) in DUTY:
         main, sub = DUTY[(d, p)]
         return dict(main=main, unit="", sub=sub, duty=True)
+    for (dd, pp, k) in QIU:
+        if dd == d and pp == p:
+            return dict(main=k, unit="班", sub="", duty=False, qiu=True, pre="邱")
     return None
 
 def day_items(d):
-    """当天所有要到场的安排（上课 + 值班），按节次先后排序"""
-    return [(p, item_at(d, p)) for p in sorted(PERIOD_TIME) if item_at(d, p)]
+    """当天所有要到场的安排（我的课 + 值班），按节次先后排序；邱的课不算"""
+    return [(p, it) for p in sorted(PERIOD_TIME)
+            if (it := item_at(d, p)) and not it.get("qiu")]
 
 def busy_periods():
     """任意一天有安排的节次，用于左侧时间栏高亮"""
@@ -142,6 +153,7 @@ def beaver_svg(c):
 # 淡紫配色：Loopy / 酷洛米 / 米菲 共用一套，放桌面不刺眼
 LILAC = dict(
     brand="#8B79C0", brand2="#B3A2DE", accent="#F5A9C6", ink="#3B3348",
+    qiu="#5A4A8C", qiu2="#8477BE",
     bg="#F7F4FC", card="#FFFFFF", soft="#EFEAFA", line="#DFD6F1", dot="#E8E1F7",
     muted="#8B8296", warn="#D06D9E", warn2="#E99BC1", warnbg="#FBEFF5",
 )
@@ -152,6 +164,7 @@ THEMES = {
         brand="#E8455F", brand2="#FF7C9B", accent="#FFC93C", ink="#3A2B33",
         bg="#FFF3F6", card="#FFFFFF", soft="#FFE8EF", line="#F6D3DE", dot="#FADCE5",
         muted="#9A8791", warn="#F0862F", warn2="#FFA85C", warnbg="#FFF1E3",
+        qiu="#9E2E48", qiu2="#D2647F",
         mascot=kitty_svg, deco="🎀 💗 🍓", hearts="🎀",
     ),
     "puppy": dict(
@@ -159,6 +172,7 @@ THEMES = {
         brand="#2E86DE", brand2="#63AEEF", accent="#FFD23F", ink="#25384D",
         bg="#EFF7FF", card="#FFFFFF", soft="#E1F0FF", line="#CCE4F8", dot="#D8EAFB",
         muted="#7E93A8", warn="#EF7C3C", warn2="#FFA36B", warnbg="#FFF0E6",
+        qiu="#1B4F87", qiu2="#5A87C4",
         mascot=puppy_svg, deco="☁️ 🐾 ⭐", hearts="🐾",
     ),
     "loopy": dict(
@@ -284,9 +298,11 @@ def build_grid():
             note = NOTE_CELL.get((d, p))
             last = " c--last" if d == 5 else ""
             if it:
-                chip = "pill" + (" pill--duty" if it["duty"] else "")
+                chip = "pill" + (" pill--duty" if it["duty"] else
+                                 " pill--qiu" if it.get("qiu") else "")
+                pre = f'<span class="pill__pre">{it["pre"]}</span>' if it.get("pre") else ""
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
-                             f'<span class="pill__k">{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
+                             f'<span class="pill__k">{pre}{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
                              f'<span class="pill__u">{PERIOD_TIME[p]}</span></div></div>')
             elif note:
                 cells.append(f'<div class="c c--note{last}"><span>{note}</span></div>')
@@ -386,6 +402,9 @@ h2{font-size:30px}
       background:linear-gradient(150deg,var(--brand2),var(--brand));
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
 .pill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
+.pill--qiu{background:linear-gradient(150deg,var(--qiu2),var(--qiu))}
+.pill__pre{font-size:15px;font-weight:700;margin-right:3px;opacity:.9;
+           font-family:'Noto Sans SC',sans-serif}
 .pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
@@ -437,7 +456,7 @@ h2{font-size:30px}
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--accent:%(accent)s;--ink:%(ink)s;--bg:%(bg)s;
 --card:%(card)s;--soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
 %(css)s%(wm)s</style></head><body><div class="page">
 
   <div class="hero">
@@ -475,6 +494,7 @@ def main():
         css=CSS, brand=c["brand"], brand2=c["brand2"], accent=c["accent"], ink=c["ink"],
         bg=c["bg"], card=c["card"], soft=c["soft"], line=c["line"], dot=c["dot"],
         muted=c["muted"], warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
+        qiu=c["qiu"], qiu2=c["qiu2"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
         glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236),
