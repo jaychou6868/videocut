@@ -6,15 +6,17 @@
 """
 import os, json
 
-from build import (OUT, TITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL, DAYS,
+from build import (OUT, TITLE, SIGN, ATTEND, SCHEDULE, PERIOD_TIME, PERIOD_LABEL, DAYS,
                    NOTE_CELL, THEMES, item_at, busy_periods, mascot_uri,
                    watermark_css, icon_css)
 
 LOCK_FILES = {k: v["file"].replace(".png", "_锁屏版.png") for k, v in THEMES.items()}
 
 W, H = 1080, 2340          # 9:19.5，主流手机比例
-CLOCK_ZONE = 916           # 顶部时钟 + 日期 + iOS 小组件占用（实测到屏幕 40% 左右）
-BUTTON_ZONE = 290          # 底部两颗圆形按钮占用
+# 顶部：时钟 + 日期 + iOS 小组件，一直压到屏幕 33% 左右
+CLOCK_ZONE = 790
+# 底部：手电筒和相机在左右两角，中间那条是空的，角色就放在那里
+BUTTON_ZONE = 340
 
 
 def build_table():
@@ -69,21 +71,24 @@ body{color:var(--ink);background-color:var(--bg);
 .page{width:%(W)spx;height:%(H)spx;padding:%(CLOCK)spx 20px %(BTN)spx;
       display:flex;flex-direction:column;gap:10px;position:relative}
 
-/* 时钟正下方那片空白放不透明的角色本体；表格里另有半透明水印 */
-.page .topm{position:absolute;left:0;right:0;top:%(WMTOP)spx;height:330px;z-index:1;
+/* 角色放在表格下方、两颗按钮之间的空档：那条中线上没有任何 iOS 元素 */
+.page .topm{position:absolute;left:0;right:0;bottom:66px;height:262px;z-index:1;
       pointer-events:none;
-      background:url('%(TOPM)s') center center / 320px auto no-repeat;
+      background:url('%(TOPM)s') center center / 250px auto no-repeat;
       filter:drop-shadow(0 6px 10px rgba(0,0,0,.14))}
 .page>*{position:relative;z-index:1}
 
-.hd{display:flex;align-items:center;gap:10px;flex:none;padding:0 4px}
+.hd{display:flex;align-items:flex-start;gap:10px;flex:none;padding:0 4px}
 .hd__t{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-size:27px;line-height:1.15}
 .hd__s{display:block;font-size:15px;font-weight:600;color:var(--muted);margin-top:2px;
        font-family:'Noto Sans SC',sans-serif}
+.hd__k{display:inline-block;margin-top:5px;background:var(--warnbg);border:2px solid var(--warn);
+       border-radius:999px;padding:2px 13px;font-size:15.5px;font-weight:800;color:var(--warn);
+       font-family:'Noto Sans SC',sans-serif;white-space:nowrap}
 .hd__by{margin-left:auto;background:var(--soft);border:2px solid var(--brand);border-radius:999px;
         padding:3px 12px;font-size:14px;font-weight:700;color:var(--brand);white-space:nowrap}
 
-.grid{flex:1;display:grid;grid-template-columns:150px repeat(5,1fr);
+.grid{flex:none;display:grid;grid-template-columns:150px repeat(5,1fr);
       grid-auto-rows:min-content;align-content:start;
       background:var(--card);border:4px solid var(--ink);border-radius:20px;overflow:hidden;
       box-shadow:0 6px 0 var(--line)}
@@ -146,14 +151,15 @@ body{color:var(--ink);background-color:var(--bg);
 PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <style>:root{--brand:%(brand)s;--brand2:%(brand2)s;--ink:%(ink)s;--bg:%(bg)s;--card:%(card)s;
 --soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
---warn:%(warn)s;--warn2:%(warn2)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;--brandd:%(brandd)s;}
+--warn:%(warn)s;--warn2:%(warn2)s;--warnbg:%(warnbg)s;
+--qiu:%(qiu)s;--qiu2:%(qiu2)s;--brandd:%(brandd)s;}
 %(css)s</style></head><body><div class="page">
-  <div class="topm"></div>
   <div class="hd">
-    <span class="hd__t">%(title)s<span class="hd__s">任教 125 / 128 / 129　·　虚线框＝邱老师</span></span>
+    <span class="hd__t">%(title)s<span class="hd__s">任教 125 / 128 / 129　·　虚线框＝邱老师</span><span class="hd__k">%(attend)s</span></span>
     <span class="hd__by">%(sign)s 制</span>
   </div>
   <div class="grid">%(table)s</div>
+  <div class="topm"></div>
 </div></body></html>"""
 
 
@@ -161,14 +167,15 @@ def main():
     for key, c in THEMES.items():
         html = PAGE % dict(
             css=CSS % dict(W=W, H=H, CLOCK=CLOCK_ZONE, BTN=BUTTON_ZONE,
-                           TOPM=mascot_uri(key, plain=True) or "", WMTOP=CLOCK_ZONE - 375)
+                           TOPM=mascot_uri(key, plain=True) or "")
                 + watermark_css(key, '420px', top=42, left=150, opacity=.16)
                 + icon_css(key),
             brand=c["brand"], brand2=c["brand2"], ink=c["ink"], bg=c["bg"], card=c["card"],
             soft=c["soft"], line=c["line"], dot=c["dot"], muted=c["muted"],
-            warn=c["warn"], warn2=c["warn2"], qiu=c["qiu"], qiu2=c["qiu2"],
+            warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
+            qiu=c["qiu"], qiu2=c["qiu2"],
             brandd=c["brandd"],
-            title=TITLE, sign=SIGN, table=build_table(),
+            title=TITLE, sign=SIGN, attend=ATTEND, table=build_table(),
         )
         path = os.path.join(OUT, f"tt_lock_{key}.html")
         with open(path, "w", encoding="utf-8") as f:
