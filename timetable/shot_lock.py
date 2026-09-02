@@ -12,9 +12,13 @@ async def main():
             await pg.goto("file://" + os.path.join(OUT, f"tt_lock_{key}.html"))
             await pg.wait_for_timeout(600)
             over = await pg.evaluate("() => document.querySelector('.page').scrollHeight - 2340")
+            # .grid 是 overflow:hidden，内容超出会被悄悄裁掉，必须单独查
+            cut = await pg.evaluate(
+                "() => {const g=document.querySelector('.grid');"
+                " return g.scrollHeight - Math.round(g.getBoundingClientRect().height);}")
             out = os.path.join(OUT, fname)
             await pg.screenshot(path=out)
-            print(f"{fname} {os.path.getsize(out)//1024}KB  超出: {over}px")
+            print(f"{fname} {os.path.getsize(out)//1024}KB  页面超出: {over}px  表格被裁: {cut}px")
         await b.close()
 
 asyncio.run(main())

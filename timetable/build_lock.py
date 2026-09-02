@@ -7,7 +7,8 @@
 import os, json
 
 from build import (OUT, TITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL, DAYS,
-                   NOTE_CELL, THEMES, item_at, busy_periods, user_mascot, mascot_uri)
+                   NOTE_CELL, THEMES, item_at, busy_periods, mascot_uri,
+                   watermark_css, icon_css)
 
 LOCK_FILES = {k: v["file"].replace(".png", "_锁屏版.png") for k, v in THEMES.items()}
 
@@ -46,7 +47,8 @@ def build_table():
             if it:
                 pill = "lpill" + (" lpill--duty" if it["duty"] else
                                   " lpill--qiu" if it.get("qiu") else "")
-                pre = f'<span class="lp__pre">{it["pre"]}</span>' if it.get("pre") else ""
+                pre = (f'<span class="lp__pre">{it["pre"]}</span>' if it.get("pre")
+                       else '' if it["duty"] else '<span class="ico"></span>')
                 out.append(f'<div class="lc{last}"><div class="{pill}">'
                            f'<span class="lp__k">{pre}{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
                            f'<span class="lp__t">{PERIOD_TIME[p]}</span></div></div>')
@@ -67,14 +69,14 @@ body{color:var(--ink);background-color:var(--bg);
 .page{width:%(W)spx;height:%(H)spx;padding:%(CLOCK)spx 20px %(BTN)spx;
       display:flex;flex-direction:column;gap:10px;position:relative}
 
-/* 角色放在时钟正下方那片空白：那块本来就空着，也不压任何文字 */
-.page:before{content:'';position:absolute;left:0;right:0;top:%(WMTOP)spx;height:250px;
-             z-index:0;pointer-events:none;opacity:.34;
-             background:url('%(WM)s') center center / 240px auto no-repeat}
+/* 时钟正下方那片空白放不透明的角色本体；表格里另有半透明水印 */
+.page .topm{position:absolute;left:0;right:0;top:%(WMTOP)spx;height:250px;z-index:1;
+      pointer-events:none;
+      background:url('%(TOPM)s') center center / 232px auto no-repeat;
+      filter:drop-shadow(0 6px 10px rgba(0,0,0,.14))}
 .page>*{position:relative;z-index:1}
 
 .hd{display:flex;align-items:center;gap:10px;flex:none;padding:0 4px}
-.hd img{width:46px;height:46px;object-fit:contain;flex:none}
 .hd__t{font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;font-size:27px;line-height:1}
 .hd__by{margin-left:auto;background:var(--soft);border:2px solid var(--brand);border-radius:999px;
         padding:3px 12px;font-size:14px;font-weight:700;color:var(--brand);white-space:nowrap}
@@ -118,11 +120,17 @@ body{color:var(--ink);background-color:var(--bg);
        background:linear-gradient(150deg,var(--brand2),var(--brand));
        box-shadow:0 3px 0 rgba(0,0,0,.13)}
 .lpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
-.lpill--qiu{background:linear-gradient(150deg,var(--qiu2),var(--qiu))}
-.lp__pre{font-size:17px;font-weight:700;margin-right:3px;opacity:.9;
+/* 邱老师的课：空心虚线牌子 + 深色字，靠形状区分，不只靠颜色 */
+.lpill--qiu{background:color-mix(in srgb,var(--qiu) 10%%,#fff);color:var(--qiu);
+            border:3px dashed var(--qiu);box-shadow:none}
+.lpill--qiu .lp__t{opacity:.8}
+.lp__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:7px;
+         font-size:17px;font-weight:800;padding:1px 7px;margin-right:5px;vertical-align:2px;
          font-family:'Noto Sans SC',sans-serif}
 .lp__k{font-size:27px;font-weight:800;line-height:1;
+       display:flex;align-items:center;justify-content:center;gap:5px;
        font-family:'Fredoka','Noto Sans SC',sans-serif}
+.lpill .ico{width:24px;height:24px}
 .lp__k em{font-size:15px;font-style:normal;font-weight:700;margin-left:2px;
           font-family:'Noto Sans SC',sans-serif}
 .lp__t{font-size:16px;font-weight:700;opacity:.97;
@@ -137,8 +145,8 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 --soft:%(soft)s;--line:%(line)s;--dot:%(dot)s;--muted:%(muted)s;
 --warn:%(warn)s;--warn2:%(warn2)s;--qiu:%(qiu)s;--qiu2:%(qiu2)s;}
 %(css)s</style></head><body><div class="page">
+  <div class="topm"></div>
   <div class="hd">
-    %(mascot)s
     <span class="hd__t">%(title)s</span>
     <span class="hd__by">%(sign)s 制</span>
   </div>
@@ -150,11 +158,13 @@ def main():
     for key, c in THEMES.items():
         html = PAGE % dict(
             css=CSS % dict(W=W, H=H, CLOCK=CLOCK_ZONE, BTN=BUTTON_ZONE,
-                           WM=mascot_uri(key) or "", WMTOP=CLOCK_ZONE - 250),
+                           TOPM=mascot_uri(key, plain=True) or "", WMTOP=CLOCK_ZONE - 262)
+                + watermark_css(key, '420px', top=42, left=150, opacity=.16)
+                + icon_css(key),
             brand=c["brand"], brand2=c["brand2"], ink=c["ink"], bg=c["bg"], card=c["card"],
             soft=c["soft"], line=c["line"], dot=c["dot"], muted=c["muted"],
             warn=c["warn"], warn2=c["warn2"], qiu=c["qiu"], qiu2=c["qiu2"],
-            mascot=(user_mascot(key) or ""), title=TITLE, sign=SIGN, table=build_table(),
+            title=TITLE, sign=SIGN, table=build_table(),
         )
         path = os.path.join(OUT, f"tt_lock_{key}.html")
         with open(path, "w", encoding="utf-8") as f:

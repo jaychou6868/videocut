@@ -10,7 +10,7 @@ import os, json
 
 from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL,
                    DAYS, NOTE_CELL, THEMES, item_at, busy_periods,
-                   user_mascot, watermark_css)
+                   user_mascot, watermark_css, icon_css)
 
 WIDE_FILES = {k: v["file"].replace(".png", "_横版.png") for k, v in THEMES.items()}
 
@@ -46,7 +46,8 @@ def build_rows():
             if it:
                 pill = "wpill" + (" wpill--duty" if it["duty"] else
                                   " wpill--qiu" if it.get("qiu") else "")
-                pre = f'<span class="wpill__pre">{it["pre"]}</span>' if it.get("pre") else ""
+                pre = (f'<span class="wpill__pre">{it["pre"]}</span>' if it.get("pre")
+                       else '' if it["duty"] else '<span class="ico"></span>')
                 out.append(f'<div class="wc wc--on{last}"><div class="{pill}">'
                            f'<span class="wpill__k">{pre}{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
                            f'<span class="wpill__u">{PERIOD_TIME[p]}</span></div></div>')
@@ -132,10 +133,16 @@ h1 small{display:block;font-size:14px;color:var(--muted);margin-top:3px;
        background:linear-gradient(150deg,var(--brand2),var(--brand));
        box-shadow:0 3px 0 rgba(0,0,0,.13),0 4px 9px rgba(0,0,0,.13)}
 .wpill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
-.wpill--qiu{background:linear-gradient(150deg,var(--qiu2),var(--qiu))}
-.wpill__pre{font-size:13px;font-weight:700;margin-right:3px;opacity:.9;
+/* 邱老师的课：空心虚线牌子 + 深色字，靠形状区分，不只靠颜色 */
+.wpill--qiu{background:color-mix(in srgb,var(--qiu) 10%,#fff);color:var(--qiu);
+            border:2.5px dashed var(--qiu);box-shadow:none}
+.wpill--qiu .wpill__u{opacity:.8}
+.wpill__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:6px;
+            font-size:14px;font-weight:800;padding:0 6px;margin-right:4px;vertical-align:1px;
             font-family:'Noto Sans SC',sans-serif}
-.wpill__k{font-size:21px;font-weight:800;line-height:1.05}
+.wpill__k{font-size:21px;font-weight:800;line-height:1.05;
+          display:flex;align-items:center;justify-content:center;gap:4px}
+.wpill .ico{width:20px;height:20px}
 .wpill__k em{font-size:13px;font-style:normal;font-weight:700;margin-left:2px;
              font-family:'Noto Sans SC',sans-serif}
 .wpill__u{font-size:13.5px;font-weight:700;opacity:.95;letter-spacing:.2px;
@@ -196,7 +203,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),
-            wm=watermark_css(key, '560px', top=40, left=170),
+            wm=watermark_css(key, '560px', top=40, left=170) + icon_css(key),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")
         with open(path, "w", encoding="utf-8") as f:

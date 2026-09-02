@@ -196,12 +196,12 @@ ASSETS = os.path.join(OUT, "assets")
 MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
         ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml"}
 
-def mascot_uri(key):
+def mascot_uri(key, plain=False):
     """角色图的 data URI，用于表格中央的背景水印。
     优先用 prep_assets.py 生成的压暗版 wm_*，白色部分才不会隐形。"""
     if not os.path.isdir(ASSETS):
         return None
-    names = (f"wm_{key}", f"mascot_{key}")
+    names = (f"mascot_{key}",) if plain else (f"wm_{key}", f"mascot_{key}")
     for want in names:
       for fn in sorted(os.listdir(ASSETS)):
         stem, ext = os.path.splitext(fn)
@@ -209,6 +209,15 @@ def mascot_uri(key):
             data = base64.b64encode(open(os.path.join(ASSETS, fn), "rb").read()).decode()
             return f"data:{MIME[ext.lower()]};base64,{data}"
     return None
+
+
+def icon_css(key):
+    """自己的课前面那个小角色图标（邱老师的课用「邱」标签，两边不会混）"""
+    uri = mascot_uri(key, plain=True)
+    if not uri:
+        return ""
+    return ("\n.ico{display:inline-block;flex:none;vertical-align:-2px;"
+            f"background:url('{uri}') center center / contain no-repeat}}")
 
 
 def watermark_css(key, size, top=0, bottom=0, left=0, opacity=.16):
@@ -300,7 +309,8 @@ def build_grid():
             if it:
                 chip = "pill" + (" pill--duty" if it["duty"] else
                                  " pill--qiu" if it.get("qiu") else "")
-                pre = f'<span class="pill__pre">{it["pre"]}</span>' if it.get("pre") else ""
+                pre = (f'<span class="pill__pre">{it["pre"]}</span>' if it.get("pre")
+                       else '' if it["duty"] else '<span class="ico"></span>')
                 cells.append(f'<div class="c c--on{last}"><div class="{chip}">'
                              f'<span class="pill__k">{pre}{it["main"]}<em>{it["unit"] or it["sub"]}</em></span>'
                              f'<span class="pill__u">{PERIOD_TIME[p]}</span></div></div>')
@@ -402,10 +412,16 @@ h2{font-size:30px}
       background:linear-gradient(150deg,var(--brand2),var(--brand));
       box-shadow:0 4px 0 rgba(0,0,0,.13),0 5px 12px rgba(0,0,0,.14)}
 .pill--duty{background:linear-gradient(150deg,var(--warn2),var(--warn))}
-.pill--qiu{background:linear-gradient(150deg,var(--qiu2),var(--qiu))}
-.pill__pre{font-size:15px;font-weight:700;margin-right:3px;opacity:.9;
+/* 邱老师的课：空心虚线牌子 + 深色字，和自己的实心牌子在「形状」上就分开 */
+.pill--qiu{background:color-mix(in srgb,var(--qiu) 10%,#fff);color:var(--qiu);
+           border:3px dashed var(--qiu);box-shadow:none}
+.pill--qiu .pill__u{opacity:.8}
+.pill__pre{display:inline-block;background:var(--qiu);color:#fff;border-radius:7px;
+           font-size:17px;font-weight:800;padding:1px 7px;margin-right:5px;vertical-align:2px;
            font-family:'Noto Sans SC',sans-serif}
-.pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px}
+.pill__k{font-size:31px;font-weight:800;line-height:1.05;letter-spacing:.5px;
+         display:flex;align-items:center;justify-content:center;gap:5px}
+.pill .ico{width:26px;height:26px}
 .pill__k em{font-size:16px;font-style:normal;font-weight:700;margin-left:2px;
             font-family:'Noto Sans SC',sans-serif}
 .pill__u{font-size:15px;font-weight:700;opacity:.95;letter-spacing:.2px;margin-top:2px;
@@ -497,7 +513,7 @@ def main():
         qiu=c["qiu"], qiu2=c["qiu2"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236),
+        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236) + icon_css(key),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:
