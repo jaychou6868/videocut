@@ -6,7 +6,7 @@
 """
 import os, json
 
-from build import (OUT, TITLE, SIGN, ATTEND, SCHEDULE, PERIOD_TIME, PERIOD_LABEL, DAYS,
+from build import (OUT, TITLE, SIGN, ATTEND, LOCK_SUB, SCHEDULE, PERIOD_TIME, PERIOD_LABEL, DAYS,
                    NOTE_CELL, THEMES, item_at, busy_periods, mascot_uri,
                    watermark_css, icon_css)
 
@@ -155,7 +155,7 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 --qiu:%(qiu)s;--qiu2:%(qiu2)s;--brandd:%(brandd)s;}
 %(css)s</style></head><body><div class="page">
   <div class="hd">
-    <span class="hd__t">%(title)s<span class="hd__s">任教 125 / 128 / 129　·　虚线框＝邱老师</span><span class="hd__k">%(attend)s</span></span>
+    <span class="hd__t">%(title)s<span class="hd__s">%(locksub)s</span><span class="hd__k">%(attend)s</span></span>
     <span class="hd__by">%(sign)s 制</span>
   </div>
   <div class="grid">%(table)s</div>
@@ -175,7 +175,8 @@ def main():
             warn=c["warn"], warn2=c["warn2"], warnbg=c["warnbg"],
             qiu=c["qiu"], qiu2=c["qiu2"],
             brandd=c["brandd"],
-            title=TITLE, sign=SIGN, attend=ATTEND, table=build_table(),
+            title=TITLE, sign=SIGN, attend=ATTEND, locksub=LOCK_SUB,
+            table=build_table(),
         )
         path = os.path.join(OUT, f"tt_lock_{key}.html")
         with open(path, "w", encoding="utf-8") as f:

@@ -9,7 +9,7 @@
 import os, json
 
 from build import (OUT, TITLE, SUBTITLE, SIGN, SCHEDULE, PERIOD_TIME, PERIOD_LABEL,
-                   DAYS, NOTE_CELL, THEMES, item_at, busy_periods,
+                   DAYS, NOTE_CELL, THEMES, item_at, busy_periods, week_stats,
                    user_mascot, watermark_css, icon_css)
 
 WIDE_FILES = {k: v["file"].replace(".png", "_横版.png") for k, v in THEMES.items()}
@@ -178,9 +178,9 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
     %(mascot)s
     <div><h1>%(title)s<small>%(subtitle)s</small></h1></div>
     <div class="stats">
-      <span class="stat">每周 <b>9</b> 节</span>
+      <span class="stat">每周 <b>%(nclass)s</b> 节</span>
       <span class="stat">周一到周五 <b>每周相同</b></span>
-      <span class="stat">最早 <b>7:40</b></span>
+      <span class="stat">最早 <b>%(first)s</b></span>
       <span class="by">%(sign)s 制</span>
     </div>
   </div>
@@ -205,6 +205,7 @@ def main():
             mascot=(user_mascot(key) or c["mascot"](c)), hearts=c["hearts"],
             title=TITLE, subtitle=SUBTITLE, sign=SIGN,
             head=build_head(), rows=build_rows(),
+            nclass=week_stats()[0], first=week_stats()[1],
             wm=watermark_css(key, '560px', top=40, left=170) + icon_css(key),
         )
         path = os.path.join(OUT, f"tt_wide_{key}.html")

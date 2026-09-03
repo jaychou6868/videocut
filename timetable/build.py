@@ -12,6 +12,8 @@ SUBTITLE = "2026 学年第一学期 · 任教 125 / 128 / 129 班　·　虚线�
 SIGN = "凯凯"
 # 打卡时间（手机版才显示，中午回家补觉别忘了几点前回来）
 ATTEND = "打卡　上午 8:05—11:05　下午 13:20—16:30"
+# 锁屏版空间窄，副标题单独写一份短的
+LOCK_SUB = "任教 125 / 128 / 129　·　虚线框＝邱老师"
 
 # ---------------- 数据 ----------------
 # 作息表（萧山三中作息时间表）。kind: rest / class / meal / night
@@ -66,6 +68,7 @@ QIU = [
 # 固定值班：(星期, 节次) -> (主标, 副标)。跟上课一样排进表里，不单列
 DUTY = {(4, 10): ("晚自修", "值班")}
 
+MY_PRE = None                                        # 课程牌上的老师标记，None = 我自己的课
 DAYS = ["周一", "周二", "周三", "周四", "周五"]      # 周六周日无政治课，不入表
 WARN_P = {s["p"] for s in SCHEDULE if s.get("warn") and s.get("p")}   # 待确认的节次
 NOTE_CELL = {(1, 6): "全校会议"}                     # 非政治课，但影响作息的提示
@@ -80,7 +83,9 @@ def item_at(d, p):
     """这一格要做什么：上课 -> 班级，值班 -> 值班。都算「要到场」"""
     k = lesson_at(d, p)
     if k:
-        return dict(main=k, unit="班", sub="政治", duty=False)
+        # MY_PRE 有值时（比如出邱老师那份），牌子上挂老师名字而不是「我的课」图标
+        return dict(main=k, unit="班", sub="政治", duty=False,
+                    **({"pre": MY_PRE} if MY_PRE else {}))
     if (d, p) in DUTY:
         main, sub = DUTY[(d, p)]
         return dict(main=main, unit="", sub=sub, duty=True)
@@ -93,6 +98,20 @@ def day_items(d):
     """当天所有要到场的安排（我的课 + 值班），按节次先后排序；邱的课不算"""
     return [(p, it) for p in sorted(PERIOD_TIME)
             if (it := item_at(d, p)) and not it.get("qiu")]
+
+def _mins(t):
+    h, m = t.split(":")
+    return int(h) * 60 + int(m)
+
+
+def week_stats():
+    """顶部那两个数字按数据算，换成别人的课表也不会写死"""
+    items = [it for d in range(1, 6) for _, it in day_items(d)]
+    n = sum(1 for it in items if not it["duty"])
+    starts = [PERIOD_TIME[p].split("—")[0] for d in range(1, 6) for p, _ in day_items(d)]
+    first = min(starts, key=_mins)          # 按分钟比，否则 "10:30" 会排在 "8:30" 前面
+    return n, first
+
 
 def busy_periods():
     """任意一天有安排的节次，用于左侧时间栏高亮"""
@@ -248,10 +267,6 @@ def user_mascot(key):
     return None
 
 # ---------------- HTML 片段 ----------------
-def _mins(t):
-    h, m = t.split(":")
-    return int(h) * 60 + int(m)
-
 def day_span(items):
     """当天从第一项开始到最后一项结束的跨度，以及是否连堂（间隔≤15分钟）"""
     ps = [p for p, _ in items]
@@ -485,9 +500,9 @@ PAGE = """<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
     <div class="hero__txt">
       <h1>%(title)s<small>%(subtitle)s</small></h1>
       <div class="stats">
-        <span class="stat">每周 <b>9</b> 节</span>
+        <span class="stat">每周 <b>%(nclass)s</b> 节</span>
         <span class="stat">周一到周五 <b>每周相同</b></span>
-        <span class="stat">最早 <b>7:40</b> 上课</span>
+        <span class="stat">最早 <b>%(first)s</b> 上课</span>
       </div>
     </div>
     <div class="by">%(sign)s 制</div>
@@ -517,7 +532,8 @@ def main():
         qiu=c["qiu"], qiu2=c["qiu2"], brandd=c["brandd"],
         mascot=(user_mascot(key) or c["mascot"](c)), deco=c["deco"], hearts=c["hearts"],
         title=TITLE, subtitle=SUBTITLE, sign=SIGN,
-        glance=build_glance(), grid=build_grid(), wm=watermark_css(key, '640px', top=56, left=236) + icon_css(key),
+        glance=build_glance(), grid=build_grid(),
+        nclass=week_stats()[0], first=week_stats()[1], wm=watermark_css(key, '640px', top=56, left=236) + icon_css(key),
     )
     path = os.path.join(OUT, f"tt_{key}.html")
     with open(path, "w", encoding="utf-8") as f:
