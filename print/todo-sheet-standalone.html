@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html{color-scheme:light dark}
+  body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none !important}
+</style>
+<title>待办清单印张</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    /* 界面（随系统深浅色变化） */
+    --bg:#eef0f3;
+    --ui-panel:#ffffff;
+    --ui-fg:#1a1d23;
+    --ui-muted:#6a7280;
+    --ui-line:#d8dce2;
+    --ui-field:#f4f6f8;
+    --accent:#1f5d8c;
+    --accent-fg:#ffffff;
+
+    /* 纸张（固定，模拟真实打印效果，不随主题变化） */
+    --paper:#ffffff;
+    --paper-edge:#dfe2e7;
+    --ink:#15181d;
+    --ink-2:#4d545f;
+    --rule:#b9bfc7;
+    --box:#7b828d;
+    --cut:#c8ccd3;
+
+    --sans:"IBM Plex Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --mono:"IBM Plex Mono","PingFang SC","Microsoft YaHei",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#14171c;
+      --ui-panel:#1b1f26;
+      --ui-fg:#e7eaef;
+      --ui-muted:#98a1af;
+      --ui-line:#2c323b;
+      --ui-field:#232830;
+      --accent:#79b3df;
+      --accent-fg:#0f1318;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171c;
+    --ui-panel:#1b1f26;
+    --ui-fg:#e7eaef;
+    --ui-muted:#98a1af;
+    --ui-line:#2c323b;
+    --ui-field:#232830;
+    --accent:#79b3df;
+    --accent-fg:#0f1318;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ui-fg);
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  /* ---------- 控制台（不打印） ---------- */
+  .chrome{
+    position:sticky; top:0; z-index:10;
+    background:var(--ui-panel);
+    border-bottom:1px solid var(--ui-line);
+  }
+  .chrome-in{
+    max-width:1080px; margin:0 auto; padding:14px 20px 16px;
+    display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px 26px;
+  }
+  .brand{margin-right:auto}
+  .brand h1{
+    margin:0; font-size:16px; font-weight:600; letter-spacing:.01em;
+  }
+  .brand p{
+    margin:2px 0 0; color:var(--ui-muted); font-size:12.5px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px}
+  .field > label{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ui-muted);
+  }
+  .seg{
+    display:flex; background:var(--ui-field);
+    border:1px solid var(--ui-line); border-radius:7px; padding:2px; gap:2px;
+  }
+  .seg label{
+    position:relative; display:block;
+  }
+  .seg input{
+    position:absolute; inset:0; opacity:0; margin:0; cursor:pointer;
+  }
+  .seg span{
+    display:block; padding:5px 11px; border-radius:5px;
+    font-size:12.5px; white-space:nowrap; color:var(--ui-muted); cursor:pointer;
+  }
+  .seg span b{font-family:var(--mono); font-weight:500; font-size:12px}
+  .seg input:checked + span{background:var(--accent); color:var(--accent-fg)}
+  .seg input:focus-visible + span{outline:2px solid var(--accent); outline-offset:2px}
+
+  .toggles{display:flex; gap:14px; align-items:center; padding-bottom:5px}
+  .tg{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ui-muted); cursor:pointer}
+  .tg input{accent-color:var(--accent); width:14px; height:14px; cursor:pointer}
+
+  #title{
+    width:150px; padding:6px 9px; border-radius:7px;
+    border:1px solid var(--ui-line); background:var(--ui-field);
+    color:var(--ui-fg); font-family:var(--sans); font-size:13px;
+  }
+  #title:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  .go{
+    padding:9px 18px; border:0; border-radius:7px;
+    background:var(--accent); color:var(--accent-fg);
+    font-family:var(--sans); font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .go:hover{filter:brightness(1.08)}
+  .go:focus-visible{outline:2px solid var(--ui-fg); outline-offset:2px}
+
+  /* ---------- 读数条 ---------- */
+  .meter{
+    max-width:1080px; margin:0 auto; padding:12px 20px 0;
+    display:flex; flex-wrap:wrap; gap:10px 28px; align-items:baseline;
+  }
+  .stat{display:flex; align-items:baseline; gap:7px}
+  .stat b{
+    font-family:var(--mono); font-weight:500; font-size:19px;
+    font-variant-numeric:tabular-nums; color:var(--ui-fg);
+  }
+  .stat i{font-style:normal; font-size:12.5px; color:var(--ui-muted)}
+  .stat.save b{color:var(--accent)}
+  .note{
+    max-width:1080px; margin:0 auto; padding:6px 20px 0;
+    font-size:12px; color:var(--ui-muted);
+  }
+  .note code{
+    font-family:var(--mono); font-size:11.5px;
+    background:var(--ui-field); border:1px solid var(--ui-line);
+    border-radius:4px; padding:1px 5px;
+  }
+
+  /* ---------- 纸张舞台 ---------- */
+  .stage{
+    display:flex; justify-content:center;
+    padding:22px 20px 60px;
+  }
+  .holder{position:relative}
+  .sheet{
+    position:relative;
+    width:210mm; height:297mm;
+    padding:10mm;
+    background:var(--paper);
+    color:var(--ink);
+    transform-origin:top left;
+    box-shadow:0 1px 2px rgba(16,20,28,.16), 0 14px 40px rgba(16,20,28,.14);
+    border:1px solid var(--paper-edge);
+    display:grid;
+    print-color-adjust:exact;
+    -webkit-print-color-adjust:exact;
+  }
+
+  .panel{display:flex; flex-direction:column; min-height:0}
+  .ph{display:flex; align-items:flex-end; gap:4mm; height:var(--head)}
+  .ph .pt{
+    font-family:var(--sans); font-weight:600;
+    font-size:4.6mm; line-height:1; letter-spacing:.02em;
+    color:var(--ink); white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .ph .pd{
+    flex:0 0 34mm; margin-left:auto; padding-bottom:2.4mm;
+    display:flex; align-items:flex-end; gap:1.6mm;
+    font-family:var(--mono); font-size:2.6mm; line-height:1;
+    letter-spacing:.1em; color:var(--ink-2);
+  }
+  .ph .pd em{
+    flex:1; font-style:normal; height:3.4mm;
+    border-bottom:.25mm solid var(--rule);
+  }
+  .ph::after{content:none}
+  .panel > .band{height:.5mm; margin-top:1.6mm; background:var(--ink); opacity:.82}
+
+  .rows{margin-top:1.2mm}
+  .row{display:flex; align-items:flex-end; gap:2.6mm; height:var(--pitch)}
+  .row .box{
+    flex:0 0 auto;
+    width:var(--boxsz); height:var(--boxsz); margin-bottom:1.1mm;
+    border:.3mm solid var(--box); border-radius:.4mm;
+  }
+  .row .rule{flex:1; border-bottom:.25mm solid var(--rule); height:100%}
+
+  /* 裁切引导线 */
+  .cuts{position:absolute; inset:0; pointer-events:none}
+  .cuts .h,.cuts .v{position:absolute; color:var(--cut)}
+  .cuts .h{left:6mm; right:6mm; top:50%; border-top:.2mm dashed var(--cut)}
+  .cuts .v{top:6mm; bottom:6mm; left:50%; border-left:.2mm dashed var(--cut)}
+  .cuts .h::before{
+    content:"✂"; position:absolute; left:-5.4mm; top:-2.2mm;
+    font-size:3.2mm; line-height:1; color:var(--cut);
+  }
+
+  @media (max-width:640px){
+    .chrome-in{gap:14px 18px; padding:12px 14px}
+    .meter,.note{padding-left:14px; padding-right:14px}
+    .stage{padding:16px 12px 44px}
+  }
+
+  /* ---------- 打印 ---------- */
+  @page{size:A4; margin:0}
+  @media print{
+    .chrome,.meter,.note{display:none !important}
+    body{background:#fff; margin:0}
+    .stage{padding:0; display:block}
+    .holder{width:auto !important; height:auto !important}
+    .sheet{
+      transform:none !important;
+      box-shadow:none; border:0;
+      width:210mm; height:297mm;
+    }
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+</style>
+
+</head>
+<body>
+<div class="chrome">
+  <div class="chrome-in">
+    <div class="brand">
+      <h1>待办清单印张</h1>
+      <p>一张 A4 排几份清单 · 行距按毫米给足写字空间</p>
+    </div>
+
+    <div class="field">
+      <label for="lay-half">版式</label>
+      <div class="seg" id="layout">
+        <label><input type="radio" name="lay" value="half" id="lay-half" checked><span>对折 A5 ×2</span></label>
+        <label><input type="radio" name="lay" value="cols"><span>A4 双栏</span></label>
+        <label><input type="radio" name="lay" value="quad"><span>四联 A6 ×4</span></label>
+        <label><input type="radio" name="lay" value="full"><span>整张 A4</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="p-10">行距</label>
+      <div class="seg" id="pitch">
+        <label><input type="radio" name="pit" value="10"><span>紧凑 <b>10</b></span></label>
+        <label><input type="radio" name="pit" value="12" id="p-10" checked><span>标准 <b>12</b></span></label>
+        <label><input type="radio" name="pit" value="14"><span>宽松 <b>14</b></span></label>
+        <label><input type="radio" name="pit" value="16"><span>大字 <b>16</b></span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="title">标题</label>
+      <input id="title" type="text" value="待办清单" maxlength="18" autocomplete="off">
+    </div>
+
+    <div class="toggles">
+      <label class="tg"><input type="checkbox" id="opt-date" checked>日期栏</label>
+      <label class="tg"><input type="checkbox" id="opt-cut" checked>裁切线</label>
+    </div>
+
+    <button class="go" id="print">打印这张</button>
+  </div>
+</div>
+
+<div class="meter" id="meter"></div>
+<p class="note">
+  打印设置：纸张 <code>A4</code> · 缩放 <code>100% / 实际大小</code> · 边距 <code>无</code> · 关闭"适应页面"，否则毫米刻度会被缩掉。
+</p>
+
+<div class="stage">
+  <div class="holder" id="holder">
+    <div class="sheet" id="sheet"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PX = 96 / 25.4;              // 1mm = 3.7795px
+  var M = 10;                      // 页边距 mm
+  var W = 210 - M * 2;             // 可用宽 190mm
+  var H = 297 - M * 2;             // 可用高 277mm
+  var ORIGINAL = 13;               // 原稿：整张 A4 只有 13 行
+
+  var LAYOUTS = {
+    full: {cols:1, rows:1, gx:0,  gy:0,  cut:'none', name:'整张 A4'},
+    half: {cols:1, rows:2, gx:0,  gy:10, cut:'h',    name:'对折 A5'},
+    cols: {cols:2, rows:1, gx:12, gy:0,  cut:'none', name:'A4 双栏'},
+    quad: {cols:2, rows:2, gx:12, gy:10, cut:'both', name:'四联 A6'}
+  };
+
+  var sheet  = document.getElementById('sheet');
+  var holder = document.getElementById('holder');
+  var meter  = document.getElementById('meter');
+  var titleEl= document.getElementById('title');
+  var optDate= document.getElementById('opt-date');
+  var optCut = document.getElementById('opt-cut');
+
+  function picked(name){
+    return document.querySelector('input[name="' + name + '"]:checked').value;
+  }
+
+  function esc(s){
+    return s.replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  function render(){
+    var key   = picked('lay');
+    var L     = LAYOUTS[key];
+    var pitch = parseFloat(picked('pit'));
+    var date  = optDate.checked;
+    var cuts  = optCut.checked && L.cut !== 'none';
+    var title = titleEl.value.trim();
+
+    var panelH = (H - L.gy * (L.rows - 1)) / L.rows;
+    var head   = date ? 9 : 6.4;
+    var headBlock = head + 2.1 + 1.2;               // 标题 + 分隔条 + 间距
+    var n = Math.max(1, Math.floor((panelH - headBlock) / pitch));
+
+    var boxsz = Math.min(5.2, Math.round(pitch * 0.36 * 10) / 10);
+
+    var rows = '';
+    for (var i = 0; i < n; i++) rows += '<div class="row"><span class="box"></span><span class="rule"></span></div>';
+
+    var dateBar = date ? '<span class="pd">DATE <em></em></span>' : '';
+    var panel =
+      '<section class="panel" style="--pitch:' + pitch + 'mm;--head:' + head + 'mm;--boxsz:' + boxsz + 'mm">' +
+        '<header class="ph"><span class="pt">' + esc(title) + '</span>' + dateBar + '</header>' +
+        '<div class="band"></div>' +
+        '<div class="rows">' + rows + '</div>' +
+      '</section>';
+
+    var total = L.cols * L.rows;
+    var html = new Array(total + 1).join(panel);
+    if (cuts){
+      html += '<div class="cuts">' +
+        (L.cut === 'h' || L.cut === 'both' ? '<div class="h"></div>' : '') +
+        (L.cut === 'both' ? '<div class="v"></div>' : '') +
+        '</div>';
+    }
+
+    sheet.style.gridTemplateColumns = 'repeat(' + L.cols + ',1fr)';
+    sheet.style.gridTemplateRows    = 'repeat(' + L.rows + ',1fr)';
+    sheet.style.columnGap = L.gx + 'mm';
+    sheet.style.rowGap    = L.gy + 'mm';
+    sheet.innerHTML = html;
+
+    var perSheet = n * total;
+    var saved = Math.round((1 - ORIGINAL / perSheet) * 100);
+    var savedTxt = saved > 0 ? ('省纸 ' + saved + '%') : (saved === 0 ? '与原稿持平' : ('多用纸 ' + Math.abs(saved) + '%'));
+
+    meter.innerHTML =
+      stat(total + ' 份', L.name + ' / 每张 A4') +
+      stat(n + ' 行', '每份清单') +
+      stat(perSheet + ' 项', '单张 A4 可写') +
+      stat(pitch + ' mm', '行距（原稿约 21 mm）') +
+      '<div class="stat save"><b>' + esc(savedTxt) + '</b><i>对比原稿 13 项/张</i></div>';
+
+    fit();
+  }
+
+  function stat(big, small){
+    return '<div class="stat"><b>' + big + '</b><i>' + small + '</i></div>';
+  }
+
+  function fit(){
+    var avail = document.querySelector('.stage').clientWidth - 40;
+    var w = 210 * PX, h = 297 * PX;
+    var s = Math.min(1, avail / w);
+    sheet.style.transform = 'scale(' + s + ')';
+    holder.style.width  = (w * s) + 'px';
+    holder.style.height = (h * s) + 'px';
+  }
+
+  document.getElementById('layout').addEventListener('change', render);
+  document.getElementById('pitch').addEventListener('change', render);
+  optDate.addEventListener('change', render);
+  optCut.addEventListener('change', render);
+  titleEl.addEventListener('input', render);
+  document.getElementById('print').addEventListener('click', function(){ window.print(); });
+  window.addEventListener('resize', fit);
+
+  render();
+})();
+</script>
+</body>
+</html>
