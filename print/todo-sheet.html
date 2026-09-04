@@ -50,6 +50,10 @@
   }
 
   *{box-sizing:border-box}
+  html{
+    -webkit-text-size-adjust:100%;   /* 关掉 iOS 自动放大，否则毫米排版会被撑开 */
+    text-size-adjust:100%;
+  }
   body{
     margin:0;
     background:var(--bg);
@@ -200,10 +204,33 @@
     font-size:3.2mm; line-height:1; color:var(--cut);
   }
 
-  @media (max-width:640px){
-    .chrome-in{gap:14px 18px; padding:12px 14px}
-    .meter,.note{padding-left:14px; padding-right:14px}
-    .stage{padding:16px 12px 44px}
+  /* ---------- 手机 ---------- */
+  @media (max-width:720px){
+    .chrome{position:static}
+    .chrome-in{
+      flex-direction:column; align-items:stretch;
+      gap:13px; padding:13px 14px 15px;
+    }
+    .brand{margin-right:0}
+    .brand h1{font-size:17px}
+    .field{width:100%}
+    .seg{width:100%}
+    .seg label{flex:1 1 0; min-width:0}
+    .seg span{padding:9px 4px; text-align:center; font-size:12.5px}
+    #title{width:100%; font-size:16px; padding:9px 11px}   /* ≥16px 防止 iOS 聚焦时缩放 */
+    .toggles{padding-bottom:0; gap:20px}
+    .tg{font-size:14px}
+    .tg input{width:18px; height:18px}
+    .go{
+      position:fixed; left:12px; right:12px; bottom:12px; z-index:20;
+      padding:14px; font-size:15px;
+      box-shadow:0 6px 22px rgba(10,14,20,.28);
+    }
+    .meter{padding:12px 14px 0; gap:6px 18px}
+    .stat b{font-size:17px}
+    .stat i{font-size:11.5px}
+    .note{padding:8px 14px 0; font-size:11.5px; line-height:1.6}
+    .stage{padding:14px 12px 84px}
   }
 
   /* ---------- 打印 ---------- */
@@ -265,7 +292,8 @@
 
 <div class="meter" id="meter"></div>
 <p class="note">
-  打印设置：纸张 <code>A4</code> · 缩放 <code>100% / 实际大小</code> · 边距 <code>无</code> · 关闭"适应页面"，否则毫米刻度会被缩掉。
+  打印设置：纸张 <code>A4</code> · 缩放 <code>100% / 实际大小</code> · 边距 <code>无</code> · 关闭"适应页面"，否则毫米刻度会被缩掉。<br>
+  手机上打印：iPhone 用 <code>分享 → 打印</code>，安卓 Chrome 用 <code>⋮ → 打印</code>；也可以先存成 PDF 再发去打印。下方预览按 A4 比例缩小显示，实际输出仍是原尺寸。
 </p>
 
 <div class="stage">
@@ -366,7 +394,9 @@
   }
 
   function fit(){
-    var avail = document.querySelector('.stage').clientWidth - 40;
+    var stage = document.querySelector('.stage');
+    var cs = getComputedStyle(stage);
+    var avail = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     var w = 210 * PX, h = 297 * PX;
     var s = Math.min(1, avail / w);
     sheet.style.transform = 'scale(' + s + ')';
